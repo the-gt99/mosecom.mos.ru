@@ -16,44 +16,52 @@ class MosecomService
         $this->mosecomParser = $mosecomParser;
     }
 
-    //Получаем разбитые на пачки станции
-    public function getStationsBrokenIntoPacks($count = 5)
+
+    /**
+     * @param int $inPackCount
+     *
+     * @return array
+     */
+    public function getStationsPacks(int $inPackCount = 5)
     {
         $response = [];
 
         $stations = $this->mosecomParser->getStations();
 
-        for($i=0; $i<count($stations); $i++)
-        {
-            $stationsTmp = [];
-
-            for($j=0; $j<$count; $j++)
-            {
-                array_push($stationsTmp, $stations[$i]);
-            }
-
-            array_push($response, $stationsTmp);
-        }
+        $response = array_chunk($stations, $inPackCount);
 
         return $response;
     }
 
-    public function parse()
+    /**
+     * @param string|null $name
+     *
+     * @return array
+     */
+    public function parse(string $name = null): array
     {
         $response = [];
 
-        $stations = new CachingIterator(new ArrayIterator($this->mosecomParser->getStations()));
+        if ($name) {
+            $response[$name] = $this->mosecomParser->getStationInfoByName($name, true);
+        } else {
+            $stations = new CachingIterator(new ArrayIterator($this->mosecomParser->getStations()));
 
-        foreach ($stations as $stationName)
-        {
-            $isClose = !$stations->hasNext();
-            $response[$stationName] = $this->mosecomParser->getStationInfoByName($stationName, $isClose);
+            foreach ($stations as $stationName)
+            {
+                $isClose = !$stations->hasNext();
+                $response[$stationName] = $this->mosecomParser->getStationInfoByName($stationName, $isClose);
+            }
         }
         return $response;
     }
 
-    //получаем инфу по пачке имен
-    public function getStationsInfoByNames($stationNames)
+    /**
+     * @param array $stationNames
+     *
+     * @return array
+     */
+    public function getStationsInfoByNames(array $stationNames = []): array
     {
         $response = [];
 

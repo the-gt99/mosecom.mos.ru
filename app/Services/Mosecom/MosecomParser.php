@@ -2,6 +2,8 @@
 
 
 namespace App\Services\Mosecom;
+
+
 use App\Repositories\MosecomRepositories\MosecomRepository;
 
 class MosecomParser
@@ -10,7 +12,7 @@ class MosecomParser
     private $domain = "https://mosecom.mos.ru/";
     private $stations = [
         "ru" => "stations/",
-        "en" => "measuring-stations/"
+        "en" => "measuring-stations/" //TODO: WTF?
     ];
 
     public function __construct()
@@ -51,25 +53,20 @@ class MosecomParser
         if($isFind && $tmpMosecomData = json_decode($matches[1] ,true)) {
 
             //comment я проверил если сделать так json_decode("asdasdad") не будет ексепшен!
-            if(
-                json_last_error() == JSON_ERROR_NONE &&
-                isset($tmpMosecomData['proportions']) &&
-                isset($tmpMosecomData['units'])
-            )
-            {
+            if($tmpMosecomData && isset($tmpMosecomData['proportions']) && isset($tmpMosecomData['units'])) {
                 $response = [
                     "proportions" => [],
                     "units" => []
                 ];
 
-                foreach ($tmpMosecomData['proportions']['h'] as $key => $value)
+                foreach ($tmpMosecomData['proportions']['h'] as $key => $value) {
                     $response['proportions'][$key] =  round($value['data'][count($value['data']) - 1][1],3);
+                }
 
-                foreach ($tmpMosecomData['units']['h'] as $key => $value)
+                foreach ($tmpMosecomData['units']['h'] as $key => $value) {
                     $response['units'][$key] =  round($value['data'][count($value['data']) - 1][1],3);
-            }
-            else
-            {
+                }
+            } else {
                 dd($matches[1]);
             }
         }

@@ -55,8 +55,9 @@ class MosecomRepository
     {
         $this->tryCurlOpen();
 
-        if($isUseNewUA)
+        if($isUseNewUA) {
             $this->setRandomUserAgent();
+        }
 
         $curlOpt = [
             CURLOPT_URL => $url,
@@ -67,29 +68,31 @@ class MosecomRepository
             ]
         ];
 
-        if(count($headers) > 0)
+        if(count($headers) > 0) {
             $curlOpt[CURLOPT_HTTPHEADER] = array_merge($curlOpt[CURLOPT_HTTPHEADER], $headers);
+        }
 
         curl_setopt_array($this->curl, $curlOpt);
 
         $result = curl_exec($this->curl);
 
-        if($isClose)
+        if($isClose) {
             $this->tryCurlClose();
+        }
 
         return $result;
     }
 
     private function tryCurlOpen()
     {
-        if(is_null($this->curl))
+        if(is_null($this->curl)) {
             $this->curl = curl_init();
+        }
     }
 
     private function tryCurlClose()
     {
-        if(!is_null($this->curl))
-        {
+        if(!is_null($this->curl)) {
             curl_close($this->curl);
             $this->curl = null;
         }
@@ -97,8 +100,9 @@ class MosecomRepository
 
     private function getUserAgent()
     {
-        if(is_null($this->userAgent))
+        if(is_null($this->userAgent)) {
             $this->setRandomUserAgent();
+        }
 
         return $this->userAgent;
     }
