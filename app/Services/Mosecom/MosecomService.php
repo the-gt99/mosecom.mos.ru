@@ -38,6 +38,20 @@ class MosecomService
         return $response;
     }
 
+    public function parse()
+    {
+        $response = [];
+
+        $stations = new CachingIterator(new ArrayIterator($this->mosecomParser->getStations()));
+
+        foreach ($stations as $stationName)
+        {
+            $isClose = !$stations->hasNext();
+            $response[$stationName] = $this->mosecomParser->getStationInfoByName($stationName, $isClose);
+        }
+        return $response;
+    }
+
     //получаем инфу по пачке имен
     public function getStationsInfoByNames($stationNames)
     {
