@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\MosecomParser as MosecomParserServices;
+use App\Services\Mosecom\MosecomParserService;
 use Illuminate\Http\Request;
 
 class ParserController extends Controller
 {
     private $mosecomParser;
 
-    public function __construct(MosecomParserServices $mosecomParser)
+    public function __construct(MosecomParserService $mosecomParser)
     {
         $this->mosecomParser = $mosecomParser;
     }

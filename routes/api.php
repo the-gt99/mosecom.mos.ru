@@ -18,20 +18,6 @@ use App\Http\Controllers\ParserController;
 |
 */
 
-//Route::middleware('auth:api')->get('/user', function (Request $request) {
-//    return $request->user();
-//});
-
-Route::prefix("/currencies")->group(function () {
-    Route::get('/', [CurrenciesController::class, 'getAll']);
-    Route::get('/{id}', [CurrenciesController::class, 'getInfoById'])->where(["id" => "[a-z0-9]{40}"]);
-});
-
-Route::prefix("/products")->group(function () {
-    Route::get('/', [ProductsController::class, 'getAll']);
-});
-
-//work
 Route::prefix("/parse")->group(function () {
     Route::get('/', [ParserController::class, 'parse']);
 });

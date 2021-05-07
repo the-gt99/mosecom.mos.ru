@@ -5,7 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Services\Currency as CurrencyServices;
 use App\Services\Identifier as IdentifierService;
-use App\Services\MosecomParser as MosecomParserService;
+use App\Services\Mosecom\MosecomParserService;
 
 class MosecomServiceProvider extends ServiceProvider
 {

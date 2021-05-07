@@ -1,10 +1,10 @@
 <?php
 
 
-namespace App\Services;
-use App\Libraries\FastCurl;
+namespace App\Services\Mosecom;
+use App\Libraries\MosecomRepository;
 
-class MosecomParser
+class MosecomParserService
 {
     private $curl = null;
     private $domain = "https://mosecom.mos.ru/";
@@ -15,7 +15,7 @@ class MosecomParser
 
     public function __construct()
     {
-        $this->curl = new FastCurl();
+        $this->curl = new MosecomRepository();
     }
 
     public function getStations($isClose = true, $isUseNewUA = false)
@@ -40,7 +40,16 @@ class MosecomParser
     {
         $html = $this->curl->get($this->domain . $name . "/", [], $isUseNewUA, $isClose);
 
-        return $html;
+        $isFind = preg_match(
+            "/AirCharts\.init\((.*?), {\"months\"/m",
+            $html,
+            $matches
+        );
+
+        if($isFind)
+            $response = $matches;
+
+        return $response;
     }
 
 
