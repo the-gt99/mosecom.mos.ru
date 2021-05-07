@@ -2,9 +2,9 @@
 
 
 namespace App\Services\Mosecom;
-use App\Libraries\MosecomRepository;
+use App\Repositories\MosecomRepositories\MosecomRepository;
 
-class MosecomParserService
+class MosecomParser
 {
     private $curl = null;
     private $domain = "https://mosecom.mos.ru/";
@@ -38,6 +38,8 @@ class MosecomParserService
 
     public function getStationInfoByName($name, $isClose = true, $isUseNewUA = false)
     {
+        $response = [];
+
         $html = $this->curl->get($this->domain . $name . "/", [], $isUseNewUA, $isClose);
 
         $isFind = preg_match(
@@ -46,11 +48,33 @@ class MosecomParserService
             $matches
         );
 
-        if($isFind)
-            $response = $matches;
+        if($isFind && $tmpMosecomData = json_decode($matches[1] ,true)) {
+
+            //comment я проверил если сделать так json_decode("asdasdad") не будет ексепшен!
+            if(
+                json_last_error() == JSON_ERROR_NONE &&
+                isset($tmpMosecomData['proportions']) &&
+                isset($tmpMosecomData['units'])
+            )
+            {
+                $response = [
+                    "proportions" => [],
+                    "units" => []
+                ];
+
+                foreach ($tmpMosecomData['proportions']['h'] as $key => $value)
+                    $response['proportions'][$key] =  round($value['data'][count($value['data']) - 1][1],3);
+
+                foreach ($tmpMosecomData['units']['h'] as $key => $value)
+                    $response['units'][$key] =  round($value['data'][count($value['data']) - 1][1],3);
+            }
+            else
+            {
+                dd($matches[1]);
+            }
+        }
 
         return $response;
     }
-
 
 }
