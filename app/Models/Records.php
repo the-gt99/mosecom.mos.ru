@@ -13,7 +13,9 @@ class Records extends Model
         'station_id',
         'indication_type_id',
         'proportion',
-        'unit'
+        'proportion_time',
+        'unit',
+        'unit_time'
     ];
-    protected $table = 'currencies';
+    protected $table = 'records';
 }
