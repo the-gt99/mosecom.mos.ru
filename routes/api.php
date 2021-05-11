@@ -1,11 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\ProductsController;
-use App\Http\Controllers\CurrenciesController;
-use App\Http\Controllers\ParserController;
+use App\Http\Controllers\MosecomController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,7 +14,5 @@ use App\Http\Controllers\ParserController;
 |
 */
 
-Route::prefix("/parse")->group(function () {
-    Route::get('/', [ParserController::class, 'parse']);
-});
+Route::get('/parse/{name?}', [MosecomController::class, 'parse'])->name('api.parse');
 
