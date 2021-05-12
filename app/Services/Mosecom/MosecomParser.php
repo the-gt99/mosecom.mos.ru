@@ -15,6 +15,11 @@ class MosecomParser
         "en" => "measuring-stations/" //TODO: WTF?
     ];
 
+    public function getUrl($lang = "ru")
+    {
+        return $this->domain . $this->stations[$lang];
+    }
+
     public function __construct()
     {
         $this->curl = new MosecomRepository();
@@ -49,22 +54,49 @@ class MosecomParser
             $html,
             $matches
         );
+        $dataJson = $matches[1];
 
-        if($isFind && $tmpMosecomData = json_decode($matches[1] ,true)) {
+        $hasError = preg_match(
+            "/station-info-message\">[\n ]+<p>(.*?)<\/p>/m",
+            $html,
+            $matches
+        );
+        $errorText = $matches[1];
 
-            //comment я проверил если сделать так json_decode("asdasdad") не будет ексепшен!
+        $errorIndications = $this->parseError($errorText);
+        //todo выдать на response
+
+        if($isFind && $tmpMosecomData = json_decode( $dataJson,true)) {
+
             if($tmpMosecomData && isset($tmpMosecomData['proportions']) && isset($tmpMosecomData['units'])) {
-                $response = [
-                    "proportions" => [],
-                    "units" => []
-                ];
+                $response = [];
 
                 foreach ($tmpMosecomData['proportions']['h'] as $key => $value) {
-                    $response['proportions'][$key] =  round($value['data'][count($value['data']) - 1][1],3);
+                    $lastId = count($value['data']) - 1;
+                    $lastEl = $value['data'][$lastId];
+
+
+                    $response[$key]['isError'] = false;
+
+                    if(is_null($lastEl[1]))
+                    {
+                        $response[$key]['isError'] = true;
+                        $response[$key]['errorTime'] = round($lastEl[0] / 1000);
+                        continue;
+                    }
+
+                    $response[$key]['proportion']['time'] =  round($lastEl[0] / 1000);
+                    $response[$key]['proportion']['value'] =  round($lastEl[1],3);
+
                 }
 
                 foreach ($tmpMosecomData['units']['h'] as $key => $value) {
-                    $response['units'][$key] =  round($value['data'][count($value['data']) - 1][1],3);
+                    $lastId = count($value['data']) - 1;
+                    $lastEl = $value['data'][$lastId];
+
+                    $response[$key]['unit']['time'] =  round($lastEl[0] / 1000);
+                    $response[$key]['unit']['value'] =  round($lastEl[1],3);
+
                 }
             } else {
                 dd($matches[1]);
@@ -72,6 +104,26 @@ class MosecomParser
         }
 
         return $response;
+    }
+
+    private function parseError($str)
+    {
+        $exp = explode(",",$str);
+
+        array_walk($exp, function(&$item, $key) {
+            if($key == 0)
+            {
+                $expTmp = explode(" ",$item);
+                $item = $expTmp[count($expTmp) - 1];
+            }
+
+            $item = trim($item);
+
+            $item = str_replace([",","."],"",$item);
+
+        });
+
+        return $exp;
     }
 
 }
