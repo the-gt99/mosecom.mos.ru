@@ -7,6 +7,10 @@ namespace App\Services\Mosecom;
 use ArrayIterator;
 use CachingIterator;
 
+use App\Models\Stations;
+use App\Models\TypeOfIndication;
+use App\Models\Records;
+
 class MosecomService
 {
     private $mosecomParser;
@@ -74,5 +78,36 @@ class MosecomService
         }
 
         return $response;
+    }
+
+    public function save($stations, $lang = "ru")
+    {
+        foreach ($stations as $stationName => $stationInf)
+        {
+            //Создаем тип станции если еще не создан
+            $station = Stations::firstOrCreate(
+                ['name' => $stationName],
+                ['url' => $this->mosecomParser->getUrl($lang)]
+            );
+
+            foreach ($stationInf as $indicationName => $indicationInf)
+            {
+                //Создаем тип измерения если еще не создан
+                $typeOfIndication = TypeOfIndication::firstOrCreate(
+                    ['name' => $indicationName]
+                );
+
+                Records::firstOrCreate(
+                    [
+                        'station_id' => $station->id,
+                        'indication_type_id' => $typeOfIndication->id,
+                        'proportion' => $indicationInf['proportion']['value'],
+                        'proportion_time' => $indicationInf['proportion']['time'],
+                        'unit' => $indicationInf['unit']['value'],
+                        'unit_time' => $indicationInf['unit']['time'],
+                    ]
+                );
+            }
+        }
     }
 }

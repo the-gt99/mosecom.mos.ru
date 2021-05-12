@@ -13,4 +13,5 @@ class TypeOfIndication extends Model
         'name'
     ];
     protected $table = 'type_of_indication';
+    public $timestamps = false;
 }
