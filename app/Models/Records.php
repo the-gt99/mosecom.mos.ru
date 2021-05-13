@@ -20,5 +20,6 @@ class Records extends Model
         'unit',
         'measurement_at'
     ];
+
     protected $table = 'records';
 }
