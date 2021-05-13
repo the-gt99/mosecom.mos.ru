@@ -19,8 +19,8 @@ class CreateRecordsTable extends Migration
             $table->unsignedBigInteger('station_id');
             $table->double("proportion")->nullable();
             $table->double("unit")->nullable();
+            $table->timestamp("measurement_at")->nullable();
             $table->timestamps();
-            $table->timestamp("measurement_at");
 
 
             $table->foreign('station_id')

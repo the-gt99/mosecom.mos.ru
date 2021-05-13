@@ -17,7 +17,7 @@ class CreateErrorsTable extends Migration
             $table->id();
             $table->string("message");
             $table->timestamps();
-            $table->timestamp("measurement_at");
+            $table->timestamp("measurement_at")->nullable();
             $table->unsignedBigInteger('record_id');
 
             $table->foreign('record_id')
