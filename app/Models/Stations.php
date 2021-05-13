@@ -15,7 +15,12 @@ class Stations extends Model
 
     protected $fillable = [
         'name',
-        'url'
+        'address',
+        'lat',
+        'lon',
+        'type_primaty_key',
+        'type',
+        'wind_direction'
     ];
     protected $table = 'stations';
     public $timestamps = false;
