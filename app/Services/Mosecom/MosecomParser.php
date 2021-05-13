@@ -54,8 +54,16 @@ class MosecomParser
             $html,
             $matches
         );
+        $dataJson = $matches[1];
 
-        if($isFind && $tmpMosecomData = json_decode($matches[1] ,true)) {
+        $hasError = preg_match(
+            "/station-info-message\">[\n ]+<p>(.*?)<\/p>/m",
+            $html,
+            $matches
+        );
+        $errorText = $matches[1];
+
+        if($isFind && $tmpMosecomData = json_decode($dataJson ,true)) {
 
             if($tmpMosecomData && isset($tmpMosecomData['proportions']) && isset($tmpMosecomData['units'])) {
                 $response = [];
@@ -66,7 +74,6 @@ class MosecomParser
 
                     $response[$key]['proportion']['time'] =  round($lastEl[0] / 1000);
                     $response[$key]['proportion']['value'] =  round($lastEl[1],3);
-
                 }
 
                 foreach ($tmpMosecomData['units']['h'] as $key => $value) {
@@ -78,7 +85,7 @@ class MosecomParser
 
                 }
             } else {
-                dd($matches[1]);
+                dd($dataJson);
             }
         }
 

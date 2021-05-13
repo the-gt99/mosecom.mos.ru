@@ -80,6 +80,21 @@ class MosecomService
         return $response;
     }
 
+    public function getRecordByDate($date)
+    {
+        $unix = strtotime($date);
+        $dateStart = date("Y-m-d 00:00:00", $unix);
+        $dateEnd = date("Y-m-d 23:59:59", $unix);
+
+        $tmp = Records::query()
+            ->where("measurement_at", ">=", $dateStart)
+            ->where("measurement_at", "<=", $dateEnd)
+            ->get()
+        ;
+
+        return $tmp;
+    }
+
     public function save($stations, $lang = "ru")
     {
         foreach ($stations as $stationName => $stationInf)
@@ -108,8 +123,6 @@ class MosecomService
                         'unit' => $indicationInf['unit']['value']
                     ]
                 );
-
-                break;
             }
         }
     }

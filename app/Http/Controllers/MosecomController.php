@@ -26,4 +26,8 @@ class MosecomController extends Controller
 
         return $response;
     }
+
+    public function getRecordByDate(string $date){
+        return $this->mosecomService->getRecordByDate($date);
+    }
 }
