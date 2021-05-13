@@ -10,6 +10,7 @@ use CachingIterator;
 use App\Models\Stations;
 use App\Models\TypeOfIndication;
 use App\Models\Records;
+use App\Models\Errors;
 
 class MosecomService
 {
@@ -97,32 +98,61 @@ class MosecomService
 
     public function save($stations, $lang = "ru")
     {
+
         foreach ($stations as $stationName => $stationInf)
         {
             //Создаем тип станции если еще не создан
             $station = Stations::firstOrCreate(
                 [
                     'name' => $stationName,
-                    'address' => $this->mosecomParser->getUrl($lang)
+                    'address' => $this->mosecomParser->getUrlStationByName($stationName)
                 ]
             );
 
-            foreach ($stationInf as $indicationName => $indicationInf)
+            if(isset($stationInf['measurement']))
             {
-                //Создаем тип измерения если еще не создан
-                $typeOfIndication = TypeOfIndication::firstOrCreate(
-                    ['name' => $indicationName]
-                );
+                foreach ($stationInf['measurement'] as $indicationName => $indicationInf)
+                {
+                    //Создаем тип измерения если еще не создан
+                    $typeOfIndication = TypeOfIndication::firstOrCreate(
+                        ['name' => $indicationName]
+                    );
 
-                Records::firstOrCreate(
-                    [
-                        'station_id' => $station->id,
-                        'indication_id' => $typeOfIndication->id,
-                        'proportion' => $indicationInf['proportion']['value'],
-                        'measurement_at' => date("Y-m-d H:i:s",$indicationInf['proportion']['time']),
-                        'unit' => $indicationInf['unit']['value']
-                    ]
-                );
+                    Records::firstOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'indication_id' => $typeOfIndication->id,
+                            'proportion' => $indicationInf['proportion']['value'],
+                            'measurement_at' => date("Y-m-d H:i:s",$indicationInf['proportion']['time']),
+                            'unit' => $indicationInf['unit']['value']
+                        ]
+                    );
+                }
+            }
+
+            if($stationInf['hasError'])
+            {
+                foreach ($stationInf['errorInf']['notFoundMeasurementNames'] as $indicationName)
+                {
+                    //Создаем тип измерения если еще не создан
+                    $typeOfIndication = TypeOfIndication::firstOrCreate(
+                        ['name' => $indicationName]
+                    );
+
+                    $record = Records::firstOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'indication_id' => $typeOfIndication->id,
+                            'measurement_at' => date("Y-m-d H:i:s",time()),
+                        ]
+                    );
+
+                    Errors::firstOrCreate([
+                        'message' => $stationInf['errorInf']['errorText'],
+                        'measurement_at' => date("Y-m-d H:i:s",time()),
+                        'record_id' => $record->id
+                    ]);
+                }
             }
         }
     }

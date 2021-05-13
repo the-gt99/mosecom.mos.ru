@@ -15,9 +15,9 @@ class MosecomParser
         "en" => "measuring-stations/" //TODO: WTF?
     ];
 
-    public function getUrl($lang = "ru")
+    public function getUrlStationByName($name)
     {
-        return $this->domain . $this->stations[$lang];
+        return $this->domain . $name;
     }
 
     public function __construct()
@@ -47,45 +47,78 @@ class MosecomParser
     {
         $response = [];
 
-        $html = $this->curl->get($this->domain . $name . "/", [], $isUseNewUA, $isClose);
+        //Получаем html станции
+        $html = $this->getHtmlByStationName($name, $isClose = true, $isUseNewUA = false);
 
-        $isFind = preg_match(
-            "/AirCharts\.init\((.*?), {\"months\"/m",
-            $html,
-            $matches
-        );
-        $dataJson = $matches[1];
+        //Получаем json станции
+        $stationJson = $this->getJsonByHtml($html);
 
-        $hasError = preg_match(
-            "/station-info-message\">[\n ]+<p>(.*?)<\/p>/m",
-            $html,
-            $matches
-        );
-        $errorText = $matches[1];
+        //Проверяем есть ли ошибки и полный текст ошибки при наличии
+        $errorInf = $this->tryParseErrorByHtml($html);
+        $response['hasError'] = $errorInf['hasError'];
 
-        if($isFind && $tmpMosecomData = json_decode($dataJson ,true)) {
+        if($stationJson && $tmpMosecomData = json_decode($stationJson ,true)) {
 
             if($tmpMosecomData && isset($tmpMosecomData['proportions']) && isset($tmpMosecomData['units'])) {
-                $response = [];
+
+                if($errorInf['hasError'])
+                {
+                    $measurementNames = [];
+
+                    foreach ($tmpMosecomData['proportions'] as $timeInterval => $measurementInf)
+                    {
+                        $measurementNames = array_merge($measurementNames, array_keys($measurementInf));
+                    }
+
+                    foreach ($tmpMosecomData['units'] as $timeInterval => $measurementInf)
+                    {
+                        $measurementNames = array_merge($measurementNames, array_keys($measurementInf));
+                    }
+
+                    $measurementNames = array_unique($measurementNames);
+                }
 
                 foreach ($tmpMosecomData['proportions']['h'] as $key => $value) {
                     $lastId = count($value['data']) - 1;
                     $lastEl = $value['data'][$lastId];
 
-                    $response[$key]['proportion']['time'] =  round($lastEl[0] / 1000);
-                    $response[$key]['proportion']['value'] =  round($lastEl[1],3);
+                    if(!is_null($lastEl[1]))
+                    {
+                        $response['measurement'][$key]['proportion']['time'] =  round($lastEl[0] / 1000);
+                        $response['measurement'][$key]['proportion']['value'] =  round($lastEl[1],3);
+                    }
                 }
 
                 foreach ($tmpMosecomData['units']['h'] as $key => $value) {
                     $lastId = count($value['data']) - 1;
                     $lastEl = $value['data'][$lastId];
 
-                    $response[$key]['unit']['time'] =  round($lastEl[0] / 1000);
-                    $response[$key]['unit']['value'] =  round($lastEl[1],3);
-
+                    if(!is_null($lastEl[1]))
+                    {
+                        $response['measurement'][$key]['unit']['time'] = round($lastEl[0] / 1000);
+                        $response['measurement'][$key]['unit']['value'] = round($lastEl[1], 3);
+                    }
                 }
+
+                if($errorInf['hasError'])
+                {
+                    if(isset($response['measurement']))
+                    {
+                        $diff = array_diff($measurementNames, array_keys($response['measurement']));
+                    }
+                    else
+                    {
+                        $diff = $measurementNames;
+                    }
+
+                    $response['errorInf'] = [
+                        "notFoundMeasurementNames" => $diff,
+                        "errorText" => $errorInf['text']
+                    ];
+                }
+
             } else {
-                dd($dataJson);
+                dd($stationJson);
             }
         }
 
@@ -110,6 +143,65 @@ class MosecomParser
         });
 
         return $exp;
+    }
+
+    private function getHtmlByStationName($name, $isClose = true, $isUseNewUA = false)
+    {
+        return $this->curl->get($this->domain . $name . "/", [], $isUseNewUA, $isClose);
+    }
+
+    private function getJsonByHtml($html)
+    {
+        $response = "";
+
+        $isFind = preg_match(
+            "/AirCharts\.init\((.*?), {\"months\"/m",
+            $html,
+            $matches
+        );
+
+        if($isFind)
+        {
+            $response = $matches[1];
+        }
+
+        return $response;
+    }
+
+    private function tryParseErrorByHtml($html)
+    {
+        $response = [
+            "hasError" => false,
+        ];
+
+        $hasError = preg_match(
+            "/station-info-message\">[\n ]+<p>(.*?)<\/p>/m",
+            $html,
+            $matches
+        );
+
+        if($hasError)
+        {
+            $response['hasError'] = true;
+            $errorText = $matches[1];
+
+            if(stripos($errorText, "<br />") !== false)
+            {
+                $exp = explode("<br />", $errorText);
+                $errorText = $exp[0];
+            }
+
+            $isFindHtml = preg_match_all('/<[^>]*>/m', $errorText, $matches);
+
+            if($isFindHtml)
+            {
+                $errorText = str_replace($matches[0],"", $errorText);
+            }
+
+            $response['text'] = $errorText;
+        }
+
+        return $response;
     }
 
 }
