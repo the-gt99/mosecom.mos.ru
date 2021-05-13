@@ -16,7 +16,12 @@ class CreateStationsTable extends Migration
         Schema::create('stations', function (Blueprint $table) {
             $table->id();
             $table->string("name");
-            $table->string("url");
+            $table->string("address");
+            $table->float("lat")->nullable();
+            $table->string("lon")->nullable();
+            $table->string("type_primaty_key")->nullable(); //todo тут либо primate - приматы либо private либо primary
+            $table->string("type")->nullable();
+            $table->string("wind_direction")->nullable();
         });
     }
 

@@ -15,16 +15,18 @@ class CreateRecordsTable extends Migration
     {
         Schema::create('records', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('indication_id');
             $table->unsignedBigInteger('station_id');
-            $table->unsignedBigInteger('indication_type_id');
             $table->double("proportion");
             $table->double("unit");
             $table->timestamps();
+            $table->timestamp("measurement_at");
+
 
             $table->foreign('station_id')
                 ->references('id')
                 ->on('stations');
-            $table->foreign('indication_type_id')
+            $table->foreign('indication_id')
                 ->references('id')
                 ->on('type_of_indication');
         });
