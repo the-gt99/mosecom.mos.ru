@@ -9,17 +9,15 @@ use Illuminate\Database\Eloquent\Builder;
 /**
  * @mixin Builder
  */
-class Records extends Model
+
+class Errors extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'indication_id',
-        'station_id',
-        'proportion',
-        'unit',
-        'measurement_at'
+        'message',
+        'measurement_at',
+        'record_id'
     ];
-
-    protected $table = 'records';
+    protected $table = 'errors';
 }

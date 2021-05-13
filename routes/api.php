@@ -16,3 +16,6 @@ use App\Http\Controllers\MosecomController;
 
 Route::get('/parse/{name?}', [MosecomController::class, 'parse'])->name('api.parse');
 
+Route::get('/records/{date}', [MosecomController::class, 'getRecordByDate']);
+
+

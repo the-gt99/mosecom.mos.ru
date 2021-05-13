@@ -63,10 +63,7 @@ class MosecomParser
         );
         $errorText = $matches[1];
 
-        $errorIndications = $this->parseError($errorText);
-        //todo выдать на response
-
-        if($isFind && $tmpMosecomData = json_decode( $dataJson,true)) {
+        if($isFind && $tmpMosecomData = json_decode($dataJson ,true)) {
 
             if($tmpMosecomData && isset($tmpMosecomData['proportions']) && isset($tmpMosecomData['units'])) {
                 $response = [];
@@ -75,19 +72,8 @@ class MosecomParser
                     $lastId = count($value['data']) - 1;
                     $lastEl = $value['data'][$lastId];
 
-
-                    $response[$key]['isError'] = false;
-
-                    if(is_null($lastEl[1]))
-                    {
-                        $response[$key]['isError'] = true;
-                        $response[$key]['errorTime'] = round($lastEl[0] / 1000);
-                        continue;
-                    }
-
                     $response[$key]['proportion']['time'] =  round($lastEl[0] / 1000);
                     $response[$key]['proportion']['value'] =  round($lastEl[1],3);
-
                 }
 
                 foreach ($tmpMosecomData['units']['h'] as $key => $value) {
@@ -99,7 +85,7 @@ class MosecomParser
 
                 }
             } else {
-                dd($matches[1]);
+                dd($dataJson);
             }
         }
 
