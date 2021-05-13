@@ -13,9 +13,16 @@ class TypeOfIndication extends Model
 {
     use HasFactory;
 
+    protected $table = 'type_of_indication';
+
     protected $fillable = [
         'name'
     ];
-    protected $table = 'type_of_indication';
+
     public $timestamps = false;
+
+    public function records()
+    {
+        return $this->hasMany(Records::class, 'indication_id', 'id');
+    }
 }
