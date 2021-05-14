@@ -13,6 +13,8 @@ class Stations extends Model
 {
     use HasFactory;
 
+    protected $table = 'stations';
+
     protected $fillable = [
         'name',
         'address',
@@ -22,6 +24,11 @@ class Stations extends Model
         'type',
         'wind_direction'
     ];
-    protected $table = 'stations';
+
     public $timestamps = false;
+
+    public function records()
+    {
+        return $this->hasMany(Records::class, 'station_id', 'id');
+    }
 }

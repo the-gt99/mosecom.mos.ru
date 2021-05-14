@@ -17,11 +17,11 @@ class CreateRecordsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('indication_id');
             $table->unsignedBigInteger('station_id');
+            $table->unsignedBigInteger('error_id')->nullable();
             $table->double("proportion")->nullable();
             $table->double("unit")->nullable();
             $table->timestamp("measurement_at")->nullable();
             $table->timestamps();
-
 
             $table->foreign('station_id')
                 ->references('id')
@@ -29,6 +29,9 @@ class CreateRecordsTable extends Migration
             $table->foreign('indication_id')
                 ->references('id')
                 ->on('type_of_indication');
+            $table->foreign('error_id')
+                ->references('id')
+                ->on('errors');
         });
     }
 

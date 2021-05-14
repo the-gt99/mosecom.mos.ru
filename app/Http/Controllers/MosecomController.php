@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Errors;
+use App\Models\Records;
+use App\Models\Stations;
+use App\Models\TypeOfIndication;
 use App\Services\Mosecom\MosecomService;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class MosecomController extends Controller
 {
@@ -27,7 +32,18 @@ class MosecomController extends Controller
         return $response;
     }
 
-    public function getRecordByDate(string $date){
-        return $this->mosecomService->getRecordByDate($date);
+    public function getRecordByDate(string $date)
+    {
+
+        $record = Errors::query()->first();
+        $record->load('records');
+        dd($record);
+
+//        dd($station->relationLoaded('records'));
+//        dd($station);
+//        dd($station->records);
+
+        $data = $this->mosecomService->getRecordByDate($date);
+        return JsonResource::collection($data);
     }
 }
