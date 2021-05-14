@@ -7,6 +7,11 @@ namespace App\Services\Mosecom;
 use ArrayIterator;
 use CachingIterator;
 
+use App\Models\Stations;
+use App\Models\TypeOfIndication;
+use App\Models\Records;
+use App\Models\Errors;
+
 class MosecomService
 {
     private $mosecomParser;
@@ -74,5 +79,81 @@ class MosecomService
         }
 
         return $response;
+    }
+
+    public function getRecordByDate($date)
+    {
+        $unix = strtotime($date);
+        $dateStart = date("Y-m-d 00:00:00", $unix);
+        $dateEnd = date("Y-m-d 23:59:59", $unix);
+
+        $tmp = Records::query()
+            ->where("measurement_at", ">=", $dateStart)
+            ->where("measurement_at", "<=", $dateEnd)
+            ->get()
+        ;
+
+        return $tmp;
+    }
+
+    public function save($stations, $lang = "ru")
+    {
+
+        foreach ($stations as $stationName => $stationInf)
+        {
+            //Создаем тип станции если еще не создан
+            $station = Stations::firstOrCreate(
+                [
+                    'name' => $stationName,
+                    'address' => $this->mosecomParser->getUrlStationByName($stationName)
+                ]
+            );
+
+            if(isset($stationInf['measurement']))
+            {
+                foreach ($stationInf['measurement'] as $indicationName => $indicationInf)
+                {
+                    //Создаем тип измерения если еще не создан
+                    $typeOfIndication = TypeOfIndication::firstOrCreate(
+                        ['name' => $indicationName]
+                    );
+
+                    Records::firstOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'indication_id' => $typeOfIndication->id,
+                            'proportion' => $indicationInf['proportion']['value'],
+                            'measurement_at' => date("Y-m-d H:i:s",$indicationInf['proportion']['time']),
+                            'unit' => $indicationInf['unit']['value']
+                        ]
+                    );
+                }
+            }
+
+            if($stationInf['hasError'])
+            {
+                foreach ($stationInf['errorInf']['notFoundMeasurementNames'] as $indicationName)
+                {
+                    //Создаем тип измерения если еще не создан
+                    $typeOfIndication = TypeOfIndication::firstOrCreate(
+                        ['name' => $indicationName]
+                    );
+
+                    $record = Records::firstOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'indication_id' => $typeOfIndication->id,
+                            'measurement_at' => date("Y-m-d H:i:s",time()),
+                        ]
+                    );
+
+                    Errors::firstOrCreate([
+                        'message' => $stationInf['errorInf']['errorText'],
+                        'measurement_at' => date("Y-m-d H:i:s",time()),
+                        'record_id' => $record->id
+                    ]);
+                }
+            }
+        }
     }
 }

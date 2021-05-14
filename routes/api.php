@@ -18,3 +18,6 @@ use App\Http\Controllers\MosecomController;
 Route::get('/parse/{name?}', [MosecomController::class, 'parse'])->name('api.parse');
 Route::get('/devices', [AirCmsController::class, 'getDevices'])->name('api.aircms.devices');
 
+Route::get('/records/{date}', [MosecomController::class, 'getRecordByDate']);
+
+
