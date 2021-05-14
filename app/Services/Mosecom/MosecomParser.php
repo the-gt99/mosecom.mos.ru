@@ -84,6 +84,10 @@ class MosecomParser
 
                     if(!is_null($lastEl[1]))
                     {
+                        if(!isset($response['codeNameCyrillic'][$key])) {
+                            $response['codeNameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndCodeName($key, $html);
+                        }
+
                         $response['measurement'][$key]['proportion']['time'] =  round($lastEl[0] / 1000);
                         $response['measurement'][$key]['proportion']['value'] =  round($lastEl[1],3);
                     }
@@ -95,6 +99,10 @@ class MosecomParser
 
                     if(!is_null($lastEl[1]))
                     {
+                        if(!isset($response['codeNameCyrillic'][$key])) {
+                            $response['codeNameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndCodeName($key, $html);
+                        }
+
                         $response['measurement'][$key]['unit']['time'] = round($lastEl[0] / 1000);
                         $response['measurement'][$key]['unit']['value'] = round($lastEl[1], 3);
                     }
@@ -200,6 +208,46 @@ class MosecomParser
 
             $response['text'] = $errorText;
         }
+
+        return $response;
+    }
+
+    private function getCodeCyrillicNameByHtmAndCodeName($codeName, $html)
+    {
+        $response = null;
+
+        $codeName = $this->codeNameNormolize($codeName);
+
+        $hasCodeCyrillicName = preg_match(
+            '/<\/strong>:[ \w,\(\)]*,([\w ]*)\('.$codeName.'\),/mu',
+            $html,
+            $matches
+        );
+
+        if($hasCodeCyrillicName)
+        {
+            $response = $matches[1];
+        }
+
+        return $response;
+    }
+
+    private function codeNameNormolize($codeName)
+    {
+        $response = $codeName;
+
+        $exp = explode(" ",$codeName);
+
+        if(count($exp) > 1)
+            $response = $exp[0];
+
+        if($response == "OZ")
+            $response = "О3";
+
+        $response = str_replace(".",",",$response);
+
+        //if($codeName == "PM2.5")
+            //dd($response);
 
         return $response;
     }

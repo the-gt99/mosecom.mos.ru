@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Services\Currency as CurrencyServices;
 use App\Services\Identifier as IdentifierService;
 use App\Services\Mosecom\MosecomParser;
+use App\Services\Mosecom\CurlClient;
 
 class MosecomServiceProvider extends ServiceProvider
 {

@@ -14,7 +14,8 @@ class TypeOfIndication extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name'
+        'name',
+        'codeName'
     ];
     protected $table = 'type_of_indication';
     public $timestamps = false;
