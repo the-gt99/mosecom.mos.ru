@@ -219,7 +219,7 @@ class MosecomParser
         $codeName = $this->codeNameNormolize($codeName);
 
         $hasCodeCyrillicName = preg_match(
-            '/<\/strong>:[ \w,\(\)]*,([\w ]*)\('.$codeName.'\),/mu',
+            '/<\/strong>:[ \w,\(\)]*,([\w ]*)\('.$codeName.'\)[,|<sub>]/mu',
             $html,
             $matches
         );
@@ -229,7 +229,7 @@ class MosecomParser
             $response = $matches[1];
         }
 
-        return $response;
+        return trim($response);
     }
 
     private function codeNameNormolize($codeName)
@@ -241,13 +241,15 @@ class MosecomParser
         if(count($exp) > 1)
             $response = $exp[0];
 
-        if($response == "OZ")
+        if($response == "OZ") {
             $response = "О3";
+        }
+
+        if($response == "C6H5OH") {
+            $response = "С6H5OH";
+        }
 
         $response = str_replace(".",",",$response);
-
-        //if($codeName == "PM2.5")
-            //dd($response);
 
         return $response;
     }
