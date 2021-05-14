@@ -21,7 +21,6 @@ class MosecomService
         $this->mosecomParser = $mosecomParser;
     }
 
-
     /**
      * @param int $inPackCount
      *
@@ -113,9 +112,15 @@ class MosecomService
             {
                 foreach ($stationInf['measurement'] as $indicationName => $indicationInf)
                 {
+                    if(isset($stationInf['codeNameCyrillic'][$indicationName]))
+                        $codeNameCyrillic = $stationInf['codeNameCyrillic'][$indicationName];
+                    else
+                        $codeNameCyrillic = null;
+
                     //Создаем тип измерения если еще не создан
                     $typeOfIndication = TypeOfIndication::firstOrCreate(
-                        ['name' => $indicationName]
+                        ['codeName' => $indicationName],
+                        ['name' => $codeNameCyrillic]
                     );
 
                     Records::firstOrCreate(
@@ -134,9 +139,15 @@ class MosecomService
             {
                 foreach ($stationInf['errorInf']['notFoundMeasurementNames'] as $indicationName)
                 {
+                    if(isset($stationInf['codeNameCyrillic'][$indicationName]))
+                        $codeNameCyrillic = $stationInf['codeNameCyrillic'][$indicationName];
+                    else
+                        $codeNameCyrillic = null;
+
                     //Создаем тип измерения если еще не создан
                     $typeOfIndication = TypeOfIndication::firstOrCreate(
-                        ['name' => $indicationName]
+                        ['codeName' => $indicationName],
+                        ['name' => $codeNameCyrillic]
                     );
 
                     $record = Records::firstOrCreate(
