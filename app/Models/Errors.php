@@ -14,10 +14,14 @@ class Errors extends Model
 {
     use HasFactory;
 
+    protected $table = 'errors';
+
     protected $fillable = [
         'message',
-        'measurement_at',
-        'record_id'
     ];
-    protected $table = 'errors';
+
+    public function record()
+    {
+        return $this->hasOne(Records::class, 'record_id', 'id');
+    }
 }

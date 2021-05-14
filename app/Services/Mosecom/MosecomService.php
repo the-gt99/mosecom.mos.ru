@@ -89,8 +89,7 @@ class MosecomService
         $tmp = Records::query()
             ->where("measurement_at", ">=", $dateStart)
             ->where("measurement_at", "<=", $dateEnd)
-            ->get()
-        ;
+            ->get();
 
         return $tmp;
     }
@@ -108,6 +107,40 @@ class MosecomService
                 ]
             );
 
+            //Если есть ошибки измерений создаем их и записи по ним
+            if($stationInf['hasError'])
+            {
+                foreach ($stationInf['errorInf']['notFoundMeasurementNames'] as $indicationName)
+                {
+                    if(isset($stationInf['codeNameCyrillic'][$indicationName]))
+                        $codeNameCyrillic = $stationInf['codeNameCyrillic'][$indicationName];
+                    else
+                        $codeNameCyrillic = null;
+
+                    //Создаем тип измерения если еще не создан
+                    $typeOfIndication = TypeOfIndication::firstOrCreate(
+                        ['codeName' => $indicationName],
+                        ['name' => $codeNameCyrillic]
+                    );
+
+                    $error = Errors::firstOrCreate([
+                        'message' => $stationInf['errorInf']['errorText']
+                    ]);
+
+                    Records::firstOrCreate(
+                        [
+                            'station_id' => $station->id,
+                            'indication_id' => $typeOfIndication->id,
+                            'proportion' => null,
+                            'measurement_at' => date("Y-m-d H:i:s",time()),
+                            'unit' => null,
+                            'error_id' => $error->id
+                        ]
+                    );
+                }
+            }
+
+            //Если есть не ошибочные измерения то создаем их
             if(isset($stationInf['measurement']))
             {
                 foreach ($stationInf['measurement'] as $indicationName => $indicationInf)
@@ -135,36 +168,7 @@ class MosecomService
                 }
             }
 
-            if($stationInf['hasError'])
-            {
-                foreach ($stationInf['errorInf']['notFoundMeasurementNames'] as $indicationName)
-                {
-                    if(isset($stationInf['codeNameCyrillic'][$indicationName]))
-                        $codeNameCyrillic = $stationInf['codeNameCyrillic'][$indicationName];
-                    else
-                        $codeNameCyrillic = null;
 
-                    //Создаем тип измерения если еще не создан
-                    $typeOfIndication = TypeOfIndication::firstOrCreate(
-                        ['codeName' => $indicationName],
-                        ['name' => $codeNameCyrillic]
-                    );
-
-                    $record = Records::firstOrCreate(
-                        [
-                            'station_id' => $station->id,
-                            'indication_id' => $typeOfIndication->id,
-                            'measurement_at' => date("Y-m-d H:i:s",time()),
-                        ]
-                    );
-
-                    Errors::firstOrCreate([
-                        'message' => $stationInf['errorInf']['errorText'],
-                        'measurement_at' => date("Y-m-d H:i:s",time()),
-                        'record_id' => $record->id
-                    ]);
-                }
-            }
         }
     }
 }
