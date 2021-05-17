@@ -16,7 +16,7 @@ class CreateTypeOfIndicationTable extends Migration
         Schema::create('type_of_indication', function (Blueprint $table) {
             $table->id();
             $table->string("name")->nullable();
-            $table->string("codeName");
+            $table->string("code_name");
         });
     }
 

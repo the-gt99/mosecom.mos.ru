@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AirCmsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MosecomController;
 
@@ -15,6 +16,7 @@ use App\Http\Controllers\MosecomController;
 */
 
 Route::get('/parse/{name?}', [MosecomController::class, 'parse'])->name('api.parse');
+Route::get('/devices', [AirCmsController::class, 'getDevices'])->name('api.aircms.devices');
 
 Route::get('/records/{date}', [MosecomController::class, 'getRecordByDate']);
 
