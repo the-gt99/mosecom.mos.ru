@@ -17,7 +17,7 @@ class TypeOfIndication extends Model
 
     protected $fillable = [
         'name',
-        'codeName'
+        'code_name'
     ];
 
     public $timestamps = false;

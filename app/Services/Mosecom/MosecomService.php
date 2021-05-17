@@ -115,15 +115,15 @@ class MosecomService
             {
                 foreach ($stationInf['errorInf']['notFoundMeasurementNames'] as $indicationName)
                 {
-                    if(isset($stationInf['codeNameCyrillic'][$indicationName]))
-                        $codeNameCyrillic = $stationInf['codeNameCyrillic'][$indicationName];
+                    if(isset($stationInf['code_nameCyrillic'][$indicationName]))
+                        $code_nameCyrillic = $stationInf['code_nameCyrillic'][$indicationName];
                     else
-                        $codeNameCyrillic = null;
+                        $code_nameCyrillic = null;
 
                     //Создаем тип измерения если еще не создан
                     $typeOfIndication = TypeOfIndication::firstOrCreate(
-                        ['codeName' => $indicationName],
-                        ['name' => $codeNameCyrillic]
+                        ['code_name' => $indicationName],
+                        ['name' => $code_nameCyrillic]
                     );
 
                     $error = Errors::firstOrCreate([
@@ -148,15 +148,15 @@ class MosecomService
             {
                 foreach ($stationInf['measurement'] as $indicationName => $indicationInf)
                 {
-                    if(isset($stationInf['codeNameCyrillic'][$indicationName]))
-                        $codeNameCyrillic = $stationInf['codeNameCyrillic'][$indicationName];
+                    if(isset($stationInf['code_nameCyrillic'][$indicationName]))
+                        $code_nameCyrillic = $stationInf['code_nameCyrillic'][$indicationName];
                     else
-                        $codeNameCyrillic = null;
+                        $code_nameCyrillic = null;
 
                     //Создаем тип измерения если еще не создан
                     $typeOfIndication = TypeOfIndication::firstOrCreate(
-                        ['codeName' => $indicationName],
-                        ['name' => $codeNameCyrillic]
+                        ['code_name' => $indicationName],
+                        ['name' => $code_nameCyrillic]
                     );
 
                     Records::firstOrCreate(
