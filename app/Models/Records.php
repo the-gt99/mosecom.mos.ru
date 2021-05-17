@@ -26,7 +26,7 @@ class Records extends Model
 
     public function indication()
     {
-        return $this->hasOne(TypeOfIndication::class, 'indication_id', 'id');
+        return $this->hasOne(TypeOfIndication::class, 'id', 'indication_id');
     }
 
     public function station()

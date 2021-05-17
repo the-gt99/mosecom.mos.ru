@@ -89,7 +89,10 @@ class MosecomService
         $tmp = Records::query()
             ->where("measurement_at", ">=", $dateStart)
             ->where("measurement_at", "<=", $dateEnd)
+            ->groupBy('type')
             ->get();
+
+        dd($tmp);
 
         return $tmp;
     }
