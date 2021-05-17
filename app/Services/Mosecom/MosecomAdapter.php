@@ -3,7 +3,7 @@
 
 namespace App\Services\Mosecom;
 
-use App\Jobs\MosecomParseStationAndRecordsAndSaveJob;
+use App\Jobs\MosecomParseStationAndRecordsSaveJob;
 use App\Services\GrabAdapterInterface;
 
 class MosecomAdapter implements GrabAdapterInterface
@@ -21,7 +21,7 @@ class MosecomAdapter implements GrabAdapterInterface
         $parser = $this->getParser();
         $stations = $parser->getStations();
         foreach (array_chunk($stations, 30) as $chunk) {
-            MosecomParseStationAndRecordsAndSaveJob::dispatch($chunk)->onQueue($this->getAdapterName());
+            MosecomParseStationAndRecordsSaveJob::dispatch($chunk)->onQueue($this->getAdapterName());
         }
     }
 
