@@ -44,8 +44,8 @@ class AirCmsAdapter implements GrabAdapterInterface
         $this->parse();
     }
 
-    public function getRepository()
+    public function getRepository(): AirCmsRepository
     {
-        app()->make(AirCmsRepository::class);
+        return app()->make(AirCmsRepository::class);
     }
 }

@@ -11,6 +11,7 @@ use App\Models\Stations;
 use App\Models\TypeOfIndication;
 use App\Models\Records;
 use App\Models\Errors;
+use Grimzy\LaravelMysqlSpatial\Types\Point;
 
 class MosecomService
 {
@@ -89,7 +90,10 @@ class MosecomService
         $tmp = Records::query()
             ->where("measurement_at", ">=", $dateStart)
             ->where("measurement_at", "<=", $dateEnd)
+            ->groupBy('type')
             ->get();
+
+        dd($tmp);
 
         return $tmp;
     }
@@ -100,27 +104,33 @@ class MosecomService
         foreach ($stations as $stationName => $stationInf)
         {
             //Создаем тип станции если еще не создан
-            $station = Stations::firstOrCreate(
-                [
-                    'name' => $stationName,
-                    'address' => $this->mosecomParser->getUrlStationByName($stationName)
-                ]
-            );
+
+            $station = Stations::query()->where('type_primaty_key', $stationName)->first();
+            if (!$station) {
+                $station = new Stations([
+                    'type_primaty_key' => $stationName,
+                    'address' => $stationInf['address'],
+                    'name' => $stationInf['name'],
+                    'type' => MosecomAdapter::NAME
+                ]);
+                $station->point = new Point(0,0);
+                $station->save();
+            }
 
             //Если есть ошибки измерений создаем их и записи по ним
             if($stationInf['hasError'])
             {
                 foreach ($stationInf['errorInf']['notFoundMeasurementNames'] as $indicationName)
                 {
-                    if(isset($stationInf['codeNameCyrillic'][$indicationName]))
-                        $codeNameCyrillic = $stationInf['codeNameCyrillic'][$indicationName];
+                    if(isset($stationInf['code_nameCyrillic'][$indicationName]))
+                        $code_nameCyrillic = $stationInf['code_nameCyrillic'][$indicationName];
                     else
-                        $codeNameCyrillic = null;
+                        $code_nameCyrillic = $indicationName;
 
                     //Создаем тип измерения если еще не создан
                     $typeOfIndication = TypeOfIndication::firstOrCreate(
-                        ['codeName' => $indicationName],
-                        ['name' => $codeNameCyrillic]
+                        ['code_name' => $indicationName],
+                        ['name' => $code_nameCyrillic]
                     );
 
                     $error = Errors::firstOrCreate([
@@ -145,23 +155,24 @@ class MosecomService
             {
                 foreach ($stationInf['measurement'] as $indicationName => $indicationInf)
                 {
-                    if(isset($stationInf['codeNameCyrillic'][$indicationName]))
-                        $codeNameCyrillic = $stationInf['codeNameCyrillic'][$indicationName];
+                    if(isset($stationInf['code_nameCyrillic'][$indicationName]))
+                        $code_nameCyrillic = $stationInf['code_nameCyrillic'][$indicationName];
                     else
-                        $codeNameCyrillic = null;
+                        $code_nameCyrillic = $indicationName;
 
                     //Создаем тип измерения если еще не создан
                     $typeOfIndication = TypeOfIndication::firstOrCreate(
-                        ['codeName' => $indicationName],
-                        ['name' => $codeNameCyrillic]
+                        ['code_name' => $indicationName],
+                        ['name' => $code_nameCyrillic]
                     );
 
+                    $unixTimestamp = (int)$indicationInf['proportion']['time'] - 3*60*60;
                     Records::firstOrCreate(
                         [
                             'station_id' => $station->id,
                             'indication_id' => $typeOfIndication->id,
                             'proportion' => $indicationInf['proportion']['value'],
-                            'measurement_at' => date("Y-m-d H:i:s",$indicationInf['proportion']['time']),
+                            'measurement_at' => date("Y-m-d H:i:s", $unixTimestamp),
                             'unit' => $indicationInf['unit']['value']
                         ]
                     );

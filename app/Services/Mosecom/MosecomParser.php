@@ -31,9 +31,13 @@ class MosecomParser
 
         $html = $this->curl->get($this->domain . $this->stations['ru'], [] , $isUseNewUA, $isClose);
 
+        $exp = explode("searching-data", $html);
+
+        $pattern = '/<div class=\"row-title\">[\r\n[ ]*]?<a href=\"https:\/\/mosecom.mos.ru\/([-\w]+)\/\">/um';
+
         $isFind = preg_match_all(
-            "/<div class=\"row-title\">[\r\n[ ]*]?<a href=\"https:\/\/mosecom.mos.ru\/([-\w]+)\/\">/m",
-            $html,
+            $pattern,
+            $exp[1],
             $matches
         );
 
@@ -52,6 +56,14 @@ class MosecomParser
 
         //Получаем json станции
         $stationJson = $this->getJsonByHtml($html);
+
+        //Получаем название станции
+        $stationName = $this->getNameByHtml($html);
+        $response['name'] = $stationName;
+
+        //Получаем адресс
+        $stationAddress = $this->getAddressByHtml($html);
+        $response['address'] = $stationAddress;
 
         //Проверяем есть ли ошибки и полный текст ошибки при наличии
         $errorInf = $this->tryParseErrorByHtml($html);
@@ -84,8 +96,8 @@ class MosecomParser
 
                     if(!is_null($lastEl[1]))
                     {
-                        if(!isset($response['codeNameCyrillic'][$key])) {
-                            $response['codeNameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndCodeName($key, $html);
+                        if(!isset($response['code_nameCyrillic'][$key])) {
+                            $response['code_nameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndcode_name($key, $html);
                         }
 
                         $response['measurement'][$key]['proportion']['time'] =  round($lastEl[0] / 1000);
@@ -99,8 +111,8 @@ class MosecomParser
 
                     if(!is_null($lastEl[1]))
                     {
-                        if(!isset($response['codeNameCyrillic'][$key])) {
-                            $response['codeNameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndCodeName($key, $html);
+                        if(!isset($response['code_nameCyrillic'][$key])) {
+                            $response['code_nameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndcode_name($key, $html);
                         }
 
                         $response['measurement'][$key]['unit']['time'] = round($lastEl[0] / 1000);
@@ -176,6 +188,42 @@ class MosecomParser
         return $response;
     }
 
+    private function getAddressByHtml($html)
+    {
+        $response = "";
+
+        $isFind = preg_match(
+            "/<span class=\"adress\">[\r\n]*([\w ,]+)<\/span>/mu",
+            $html,
+            $matches
+        );
+
+        if($isFind)
+        {
+            $response = trim($matches[1]);
+        }
+
+        return $response;
+    }
+
+    private function getNameByHtml($html)
+    {
+        $response = "";
+
+        $isFind = preg_match(
+            "/h3 class=\"name\">[\r\n]*([\w ,]+)<\/h3>/mu",
+            $html,
+            $matches
+        );
+
+        if($isFind)
+        {
+            $response = trim($matches[1]);
+        }
+
+        return $response;
+    }
+
     private function tryParseErrorByHtml($html)
     {
         $response = [
@@ -212,31 +260,35 @@ class MosecomParser
         return $response;
     }
 
-    private function getCodeCyrillicNameByHtmAndCodeName($codeName, $html)
+    private function getCodeCyrillicNameByHtmAndcode_name($code_name, $html)
     {
         $response = null;
 
-        $codeName = $this->codeNameNormolize($codeName);
+        $code_name = $this->code_nameNormolize($code_name);
 
         $hasCodeCyrillicName = preg_match(
-            '/<\/strong>:[ \w,\(\)]*,([\w ]*)\('.$codeName.'\)[,|<sub>]/mu',
+            '/<\/strong>:[ \w,\(\)]*,([\w ]*)\('.$code_name.'\)[,|<sub>]/mu',
             $html,
             $matches
         );
 
         if($hasCodeCyrillicName)
         {
-            $response = $matches[1];
+            $response = $this->mb_ucfirst(trim($matches[1]));
         }
 
-        return trim($response);
+        return $response;
     }
 
-    private function codeNameNormolize($codeName)
-    {
-        $response = $codeName;
+    private function mb_ucfirst($text) {
+        return mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
+    }
 
-        $exp = explode(" ",$codeName);
+    private function code_nameNormolize($code_name)
+    {
+        $response = $code_name;
+
+        $exp = explode(" ",$code_name);
 
         if(count($exp) > 1)
             $response = $exp[0];

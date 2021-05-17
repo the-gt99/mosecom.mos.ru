@@ -26,12 +26,17 @@ class Records extends Model
 
     public function indication()
     {
-        return $this->hasOne(TypeOfIndication::class, 'indication_id', 'id');
+        return $this->hasOne(TypeOfIndication::class, 'id', 'indication_id');
     }
 
     public function station()
     {
         return $this->hasOne(Stations::class, 'station_id', 'id');
+    }
+
+    public function scopeLast(Builder $query)
+    {
+        return $query->gropBy('measurement_at');
     }
 
     public function error()
