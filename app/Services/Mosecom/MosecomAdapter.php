@@ -32,6 +32,6 @@ class MosecomAdapter implements GrabAdapterInterface
 
     private function getParser()
     {
-        app()->make(MosecomParser::class);
+        return app()->make(MosecomParser::class);
     }
 }
