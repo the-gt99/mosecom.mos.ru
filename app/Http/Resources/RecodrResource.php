@@ -17,7 +17,7 @@ class RecodrResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->indication->name,
-            'particle_name' => $this->indication->codeName,
+            'particle_name' => $this->indication->code_name,
             'proportion' => $this->proportion,
             'unit' => $this->unit,
             'measurement_at' => $this->measurement_at
