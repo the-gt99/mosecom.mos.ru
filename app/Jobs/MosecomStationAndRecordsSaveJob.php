@@ -4,6 +4,8 @@
 namespace App\Jobs;
 
 use App\Services\Mosecom\MosecomService;
+use ArrayIterator;
+use CachingIterator;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -34,9 +36,19 @@ class MosecomStationAndRecordsSaveJob implements ShouldQueue
      */
     public function handle()
     {
+        $response = [];
+
         /** @var MosecomService */
         $service = $this->getService();
-        $service->save($this->mosecomData);
+        $stations = new CachingIterator(new ArrayIterator($this->mosecomData));
+
+        foreach ($stations as $stationName)
+        {
+            $isClose = !$stations->hasNext();
+            $response[$stationName] = $this->mosecomParser->getStationInfoByName($stationName, $isClose);
+        }
+
+        $service->save($response);
     }
 
     private function getService()
