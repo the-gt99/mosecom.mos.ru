@@ -18,7 +18,7 @@ class CreateStationsTable extends Migration
             $table->string("name");
             $table->string("address");
             $table->point('point')->spatialIndex();
-            $table->string("type_primaty_key")->nullable();
+            $table->string("type_primaty_key")->unique();
             $table->string("type")->nullable();
             $table->string("wind_direction")->nullable();
         });

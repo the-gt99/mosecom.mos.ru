@@ -31,9 +31,13 @@ class MosecomParser
 
         $html = $this->curl->get($this->domain . $this->stations['ru'], [] , $isUseNewUA, $isClose);
 
+        $exp = explode("searching-data", $html);
+
+        $pattern = '/<div class=\"row-title\">[\r\n[ ]*]?<a href=\"https:\/\/mosecom.mos.ru\/([-\w]+)\/\">/um';
+
         $isFind = preg_match_all(
-            "/<div class=\"row-title\">[\r\n[ ]*]?<a href=\"https:\/\/mosecom.mos.ru\/([-\w]+)\/\">/m",
-            $html,
+            $pattern,
+            $exp[1],
             $matches
         );
 
@@ -52,6 +56,14 @@ class MosecomParser
 
         //Получаем json станции
         $stationJson = $this->getJsonByHtml($html);
+
+        //Получаем название станции
+        $stationName = $this->getNameByHtml($html);
+        $response['name'] = $stationName;
+
+        //Получаем адресс
+        $stationAddress = $this->getAddressByHtml($html);
+        $response['address'] = $stationAddress;
 
         //Проверяем есть ли ошибки и полный текст ошибки при наличии
         $errorInf = $this->tryParseErrorByHtml($html);
@@ -176,6 +188,42 @@ class MosecomParser
         return $response;
     }
 
+    private function getAddressByHtml($html)
+    {
+        $response = "";
+
+        $isFind = preg_match(
+            "/<span class=\"adress\">[\r\n]*([\w ,]+)<\/span>/mu",
+            $html,
+            $matches
+        );
+
+        if($isFind)
+        {
+            $response = trim($matches[1]);
+        }
+
+        return $response;
+    }
+
+    private function getNameByHtml($html)
+    {
+        $response = "";
+
+        $isFind = preg_match(
+            "/h3 class=\"name\">[\r\n]*([\w ,]+)<\/h3>/mu",
+            $html,
+            $matches
+        );
+
+        if($isFind)
+        {
+            $response = trim($matches[1]);
+        }
+
+        return $response;
+    }
+
     private function tryParseErrorByHtml($html)
     {
         $response = [
@@ -226,10 +274,14 @@ class MosecomParser
 
         if($hasCodeCyrillicName)
         {
-            $response = $matches[1];
+            $response = $this->mb_ucfirst(trim($matches[1]));
         }
 
-        return trim($response);
+        return $response;
+    }
+
+    private function mb_ucfirst($text) {
+        return mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
     }
 
     private function code_nameNormolize($code_name)

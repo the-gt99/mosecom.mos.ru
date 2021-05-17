@@ -25,7 +25,6 @@ class MosecomController extends Controller
     {
         $response = $this->mosecomService->parse($name);
         $this->mosecomService->save($response);
-
         return $response;
     }
 
