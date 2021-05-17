@@ -84,8 +84,8 @@ class MosecomParser
 
                     if(!is_null($lastEl[1]))
                     {
-                        if(!isset($response['codeNameCyrillic'][$key])) {
-                            $response['codeNameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndCodeName($key, $html);
+                        if(!isset($response['code_nameCyrillic'][$key])) {
+                            $response['code_nameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndcode_name($key, $html);
                         }
 
                         $response['measurement'][$key]['proportion']['time'] =  round($lastEl[0] / 1000);
@@ -99,8 +99,8 @@ class MosecomParser
 
                     if(!is_null($lastEl[1]))
                     {
-                        if(!isset($response['codeNameCyrillic'][$key])) {
-                            $response['codeNameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndCodeName($key, $html);
+                        if(!isset($response['code_nameCyrillic'][$key])) {
+                            $response['code_nameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndcode_name($key, $html);
                         }
 
                         $response['measurement'][$key]['unit']['time'] = round($lastEl[0] / 1000);
@@ -212,14 +212,14 @@ class MosecomParser
         return $response;
     }
 
-    private function getCodeCyrillicNameByHtmAndCodeName($codeName, $html)
+    private function getCodeCyrillicNameByHtmAndcode_name($code_name, $html)
     {
         $response = null;
 
-        $codeName = $this->codeNameNormolize($codeName);
+        $code_name = $this->code_nameNormolize($code_name);
 
         $hasCodeCyrillicName = preg_match(
-            '/<\/strong>:[ \w,\(\)]*,([\w ]*)\('.$codeName.'\)[,|<sub>]/mu',
+            '/<\/strong>:[ \w,\(\)]*,([\w ]*)\('.$code_name.'\)[,|<sub>]/mu',
             $html,
             $matches
         );
@@ -232,11 +232,11 @@ class MosecomParser
         return trim($response);
     }
 
-    private function codeNameNormolize($codeName)
+    private function code_nameNormolize($code_name)
     {
-        $response = $codeName;
+        $response = $code_name;
 
-        $exp = explode(" ",$codeName);
+        $exp = explode(" ",$code_name);
 
         if(count($exp) > 1)
             $response = $exp[0];
