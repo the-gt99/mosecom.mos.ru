@@ -105,8 +105,9 @@ class MosecomService
             //Создаем тип станции если еще не создан
             $station = Stations::firstOrCreate(
                 [
-                    'name' => $stationName,
-                    'address' => $this->mosecomParser->getUrlStationByName($stationName)
+                    'type_primaty_key' => $stationName,
+                    'address' => $stationInf['address'],
+                    'name' => $stationInf['name']
                 ]
             );
 
@@ -118,7 +119,7 @@ class MosecomService
                     if(isset($stationInf['code_nameCyrillic'][$indicationName]))
                         $code_nameCyrillic = $stationInf['code_nameCyrillic'][$indicationName];
                     else
-                        $code_nameCyrillic = null;
+                        $code_nameCyrillic = $indicationName;
 
                     //Создаем тип измерения если еще не создан
                     $typeOfIndication = TypeOfIndication::firstOrCreate(
@@ -151,7 +152,7 @@ class MosecomService
                     if(isset($stationInf['code_nameCyrillic'][$indicationName]))
                         $code_nameCyrillic = $stationInf['code_nameCyrillic'][$indicationName];
                     else
-                        $code_nameCyrillic = null;
+                        $code_nameCyrillic = $indicationName;
 
                     //Создаем тип измерения если еще не создан
                     $typeOfIndication = TypeOfIndication::firstOrCreate(
