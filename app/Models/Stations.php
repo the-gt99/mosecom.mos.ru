@@ -34,9 +34,4 @@ class Stations extends Model
     {
         return $this->hasMany(Records::class, 'station_id', 'id');
     }
-
-    public function scopeHasLastInTime($query)
-    {
-        // return $this->records()->;
-    }
 }

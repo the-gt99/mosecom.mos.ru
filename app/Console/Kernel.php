@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Jobs\GrabberJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -24,7 +25,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        //
+        $schedule->call(function () {
+            GrabberJob::dispatch('App\Services\AirCms\AirCmsAdapter');
+            GrabberJob::dispatch('App\Services\Mosecom\MosecomAdapter');
+        })->cron('10 * * * *');
     }
 
     /**

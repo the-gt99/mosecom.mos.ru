@@ -20,8 +20,8 @@ class StationResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'address' => $this->address,
-            'lat' => $this->point->getLat(),
-            'lon' => $this->point->getLng(),
+            'lat' => $this->point ? $this->point->getLat() : null,
+            'lon' => $this->point ? $this->point->getLng() : null,
             'indications' => RecodrResource::collection($this->whenLoaded('records'))
         ];
     }

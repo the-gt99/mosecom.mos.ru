@@ -48,20 +48,12 @@ class AirCmsDevicesSaveJob implements ShouldQueue
                 if ($device['lat'] ?? $device['lon']) {
                     $stationsData->point = new Point((float)$device['lat'], (float)$device['lon']);
                 } else {
-                    // $stationsData->point = new Point(0,0);
+                    $stationsData->point = new Point(0,0);
                 }
 
                 $stationsData->save();
-            } else {
-                // $station->update([
-                //     'addres' => $device['address'],
-                //     'lat' => $device['lat'],
-                //     'lon' => $device['lon'],
-                //     'type' => AirCmsAdapter::NAME
-                // ]);
             }
         }
 
-        // Stations::insert($stationsData);
     }
 }
