@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Stations;
+use DateTime;
 use Grimzy\LaravelMysqlSpatial\Types\Point;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -16,15 +17,15 @@ class StationsRepository
      */
     public function getStationsByCoords($lat = 55.75, $lon = 37.6167)
     {
+
         return Stations::query()
             ->distanceSphere('point', new Point($lat, $lon), 10000)
-            ->has('records', '>=', 4)
             ->with(['records' => function ($query) {
-                return $query->orderBy('measurement_at', 'DESC')
-                    ->groupBy('indication_id')
-                    ->groupBy('station_id')
-                    ;
+                return $query->where('measurement_at', '>=' , date('Y-m-d H:i:s', strtotime('now -1 hour')));
             }])
+            ->whereHas('records' , function ($query) {
+                return $query->where('measurement_at', '>=' , date('Y-m-d H:i:s', strtotime('now -1 hour')));
+            })
             ->get();
     }
 }

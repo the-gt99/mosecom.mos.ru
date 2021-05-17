@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\RecodrByDateResource;
-use App\Http\Resources\RecodrResource;
-use App\Http\Resources\StationResource;
 use App\Models\Errors;
 use App\Models\Records;
 use App\Models\Stations;
@@ -38,15 +35,15 @@ class MosecomController extends Controller
     public function getRecordByDate(string $date)
     {
 
-//        $record = Errors::query()->first();
-//        $record->load('records');
-//        dd($record);
-//
-////        dd($station->relationLoaded('records'));
-////        dd($station);
-////        dd($station->records);
+        $record = Errors::query()->first();
+        $record->load('records');
+        dd($record);
 
-        //$data = $this->mosecomService->getRecordByDate($date);
-        return StationResource::collection(Stations::all());
+//        dd($station->relationLoaded('records'));
+//        dd($station);
+//        dd($station->records);
+
+        $data = $this->mosecomService->getRecordByDate($date);
+        return JsonResource::collection($data);
     }
 }
