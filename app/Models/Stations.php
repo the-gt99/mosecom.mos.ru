@@ -34,4 +34,9 @@ class Stations extends Model
     {
         return $this->hasMany(Records::class, 'station_id', 'id');
     }
+
+    public function lastRecords()
+    {
+        return $this->hasMany(Records::class, 'station_id', 'id')->last();
+    }
 }
