@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Grimzy\LaravelMysqlSpatial\Types\Point;
 
 class AirCmsDevicesSaveJob implements ShouldQueue
 {
@@ -38,24 +39,21 @@ class AirCmsDevicesSaveJob implements ShouldQueue
         foreach ($this->devices as $device) {
             $station = Stations::query()->where('type_primaty_key', $device['id'])->where('type', AirCmsAdapter::NAME)->first();
             if (!$station) {
-                $stationsData[] = [
+                $stationsData = new Stations([
                     'name' => 1,
                     'address' => $device['address'],
                     'type_primaty_key' => $device['id'],
-                    'lat' => $device['lat'],
-                    'lon' => $device['lon'],
-                    'type' => AirCmsAdapter::NAME
-                ];
-            } else {
-                $station->update([
-                    'addres' => $device['address'],
-                    'lat' => $device['lat'],
-                    'lon' => $device['lon'],
                     'type' => AirCmsAdapter::NAME
                 ]);
+                if ($device['lat'] ?? $device['lon']) {
+                    $stationsData->point = new Point((float)$device['lat'], (float)$device['lon']);
+                } else {
+                    $stationsData->point = new Point(0,0);
+                }
+
+                $stationsData->save();
             }
         }
 
-        Stations::insert($stationsData);
     }
 }

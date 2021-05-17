@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Grimzy\LaravelMysqlSpatial\Eloquent\SpatialTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,18 +12,20 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class Stations extends Model
 {
-    use HasFactory;
+    use HasFactory, SpatialTrait;
 
     protected $table = 'stations';
 
     protected $fillable = [
         'name',
         'address',
-        'lat',
-        'lon',
         'type_primaty_key',
         'type',
         'wind_direction'
+    ];
+
+    protected $spatialFields = [
+        'point',
     ];
 
     public $timestamps = false;

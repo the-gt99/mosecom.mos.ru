@@ -34,6 +34,11 @@ class Records extends Model
         return $this->hasOne(Stations::class, 'station_id', 'id');
     }
 
+    public function scopeLast(Builder $query)
+    {
+        return $query->gropBy('measurement_at');
+    }
+
     public function error()
     {
         return $this->hasOne(Errors::class, 'error_id', 'id');

@@ -178,6 +178,7 @@ return [
          * Custom application Service Providers...
          */
         App\Providers\MosecomServiceProvider::class,
+        Grimzy\LaravelMysqlSpatial\SpatialServiceProvider::class,
 
     ],
 
