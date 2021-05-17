@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Mosecom\MosecomService;
 use Illuminate\Support\ServiceProvider;
 use App\Services\Currency as CurrencyServices;
 use App\Services\Identifier as IdentifierService;
@@ -19,6 +20,10 @@ class MosecomServiceProvider extends ServiceProvider
     {
         $this->app->singleton(MosecomParser::class, function ($app) {
             return new MosecomParser();
+        });
+
+        $this->app->singleton(MosecomService::class, function ($app) {
+            return new MosecomService();
         });
     }
 
