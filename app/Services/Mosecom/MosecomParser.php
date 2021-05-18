@@ -14,6 +14,9 @@ class MosecomParser
         "ru" => "stations/",
         "en" => "measuring-stations/" //TODO: WTF?
     ];
+    private $mosecomApi = [
+        "typeOfIndications" => "wp-content/themes/moseco/map/elements.php?locale=ru_RU&mapType=air"
+    ];
 
     public function getUrlStationByName($name)
     {
@@ -23,6 +26,27 @@ class MosecomParser
     public function __construct()
     {
         $this->curl = new MosecomRepository();
+    }
+
+    public function getTypeOfIndications($isClose = true, $isUseNewUA = false)
+    {
+        $response = [];
+
+        $json = $this->curl->get($this->domain . $this->mosecomApi['typeOfIndications'], [] , $isUseNewUA, $isClose);
+
+        $typeOfIndicationsList = json_decode($json,true)[0];
+        foreach ($typeOfIndicationsList as $typeOfIndication)
+        {
+            $codeName = $typeOfIndication['name'];
+            $name = $typeOfIndication['full_name'];
+
+            array_push($response, [
+                "codeName" => preg_replace('/( \(\w+\))/u', '', $codeName),
+                "name" => trim($name),
+            ]);
+        }
+
+        return $response;
     }
 
     public function getStations($isClose = true, $isUseNewUA = false)
@@ -94,6 +118,8 @@ class MosecomParser
                     $lastId = count($value['data']) - 1;
                     $lastEl = $value['data'][$lastId];
 
+                    $key = preg_replace('/( \(\w+\))/u', '', $key);
+
                     if(!is_null($lastEl[1]))
                     {
                         $response['measurement'][$key]['proportion']['time'] =  round($lastEl[0] / 1000);
@@ -104,6 +130,8 @@ class MosecomParser
                 foreach ($tmpMosecomData['units']['h'] as $key => $value) {
                     $lastId = count($value['data']) - 1;
                     $lastEl = $value['data'][$lastId];
+
+                    $key = preg_replace('/( \(\w+\))/u', '', $key);
 
                     if(!is_null($lastEl[1]))
                     {

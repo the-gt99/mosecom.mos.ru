@@ -4,6 +4,7 @@
 namespace App\Services\Mosecom;
 
 
+use App\Repositories\MosecomRepositories\MosecomRepository;
 use ArrayIterator;
 use CachingIterator;
 
@@ -23,33 +24,20 @@ class MosecomService
     }
 
     /**
-     * @param int $inPackCount
-     *
-     * @return array
-     */
-    public function getStationsPacks(int $inPackCount = 5)
-    {
-        $response = [];
-
-        $stations = $this->mosecomParser->getStations();
-
-        $response = array_chunk($stations, $inPackCount);
-
-        return $response;
-    }
-
-    /**
      * @param string|null $name
      *
      * @return array
      */
-    public function parse(string $name = null): array
+    public function parseStationInfo(string $name = null): array
     {
         $response = [];
 
-        if ($name) {
+        if ($name)
+        {
             $response[$name] = $this->mosecomParser->getStationInfoByName($name, true);
-        } else {
+        }
+        else
+        {
             $stations = new CachingIterator(new ArrayIterator($this->mosecomParser->getStations()));
 
             foreach ($stations as $stationName)
@@ -61,44 +49,24 @@ class MosecomService
         return $response;
     }
 
-    /**
-     * @param array $stationNames
-     *
-     * @return array
-     */
-    public function getStationsInfoByNames(array $stationNames = []): array
+    public function parseTypeOfIndicationInfo()
     {
-        $response = [];
+        return $this->mosecomParser->getTypeOfIndications(true);
+    }
 
-        $stationNames = new CachingIterator(new ArrayIterator($stationNames));
-
-        foreach ($stationNames as $stationName)
-        {
-            $isClose = !$stationNames->hasNext();
-            $response[$stationName] = $this->mosecomParser->getStationInfoByName($stationName, $isClose);
+    public function saveTypeOfIndications($indicationsList)
+    {
+        foreach ($indicationsList as $indicationInf) {
+            TypeOfIndication::firstOrCreate(
+                [
+                    'code_name' => $indicationInf['codeName'],
+                    'name' => $indicationInf['name']
+                ],
+            );
         }
-
-        return $response;
     }
 
-    public function getRecordByDate($date)
-    {
-        $unix = strtotime($date);
-        $dateStart = date("Y-m-d 00:00:00", $unix);
-        $dateEnd = date("Y-m-d 23:59:59", $unix);
-
-        $tmp = Records::query()
-            ->where("measurement_at", ">=", $dateStart)
-            ->where("measurement_at", "<=", $dateEnd)
-            ->groupBy('type')
-            ->get();
-
-        dd($tmp);
-
-        return $tmp;
-    }
-
-    public function trySaveStationsInf($stations, $lang = "ru")
+    public function saveStationsInf($stations, $lang = "ru")
     {
 
         foreach ($stations as $stationName => $stationInf)
@@ -170,7 +138,5 @@ class MosecomService
                 }
             }
         }
-
-        return true;
     }
 }

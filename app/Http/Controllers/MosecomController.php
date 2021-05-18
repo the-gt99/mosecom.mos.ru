@@ -23,9 +23,13 @@ class MosecomController extends Controller
      */
     public function parse(string $name = null)
     {
-        $response = $this->mosecomService->parse($name);
-        $this->mosecomService->save($response);
-        return $response;
+        $response = $this->mosecomService->parseTypeOfIndicationInfo();
+        $this->mosecomService->saveTypeOfIndications($response);
+
+        $response1 = $this->mosecomService->parseStationInfo($name);
+        $this->mosecomService->saveStationsInf($response1);
+
+        return $response1;
     }
 
     public function getRecordByDate(string $date)
