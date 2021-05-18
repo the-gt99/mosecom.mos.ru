@@ -1,0 +1,18 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+php "$DIR/artisan" config:clear
+php "$DIR/artisan" cache:clear
+php "$DIR/artisan" clear-compiled
+php "$DIR/artisan" route:cache
+
+if [[ "$1" = "-j" ]] || [[ "$1" = "--jobs" ]]
+then
+    echo "Clearing jobs..."
+    php "$DIR/artisan" jobs:clear
+fi
+
+COMPOSER="$DIR/composer.json"
+
+composer dump-autoload --working-dir="$DIR"

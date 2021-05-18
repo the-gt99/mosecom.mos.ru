@@ -49,7 +49,7 @@ class MosecomParseStationAndRecordsSaveJob implements ShouldQueue
             $response[$stationName] = $parser->getStationInfoByName($stationName, $isClose);
         }
 
-        $service->save($response);
+        $service->saveStationsInf($response);
     }
 
     private function getService(): MosecomService
