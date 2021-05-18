@@ -49,12 +49,12 @@ class MosecomService
         return $response;
     }
 
-    public function parseTypeOfIndicationInfo()
+    public function parseTypeOfIndicationInfo(): array
     {
         return $this->mosecomParser->getTypeOfIndications(true);
     }
 
-    public function saveTypeOfIndications($indicationsList)
+    public function saveTypeOfIndications($indicationsList): void
     {
         foreach ($indicationsList as $indicationInf) {
             TypeOfIndication::firstOrCreate(
@@ -66,7 +66,7 @@ class MosecomService
         }
     }
 
-    public function saveStationsInf($stations, $lang = "ru")
+    public function saveStationsInf($stations, $lang = "ru"): void
     {
 
         foreach ($stations as $stationName => $stationInf)

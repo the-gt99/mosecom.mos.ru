@@ -28,15 +28,15 @@ class MosecomParser
         $this->curl = new MosecomRepository();
     }
 
-    public function getTypeOfIndications($isClose = true, $isUseNewUA = false)
+    public function getTypeOfIndications($isClose = true, $isUseNewUA = false): array
     {
         $response = [];
 
         $json = $this->curl->get($this->domain . $this->mosecomApi['typeOfIndications'], [] , $isUseNewUA, $isClose);
 
         $typeOfIndicationsList = json_decode($json,true)[0];
-        foreach ($typeOfIndicationsList as $typeOfIndication)
-        {
+
+        foreach ($typeOfIndicationsList as $typeOfIndication) {
             $codeName = $typeOfIndication['name'];
             $name = $typeOfIndication['full_name'];
 
@@ -49,7 +49,7 @@ class MosecomParser
         return $response;
     }
 
-    public function getStations($isClose = true, $isUseNewUA = false)
+    public function getStations($isClose = true, $isUseNewUA = false): array
     {
         $response = [];
 
@@ -65,13 +65,14 @@ class MosecomParser
             $matches
         );
 
-        if($isFind)
+        if($isFind) {
             $response = $matches[1];
+        }
 
         return $response;
     }
 
-    public function getStationInfoByName($name, $isClose = true, $isUseNewUA = false)
+    public function getStationInfoByName($name, $isClose = true, $isUseNewUA = false): array
     {
         $response = [];
 
@@ -118,6 +119,7 @@ class MosecomParser
                     $lastId = count($value['data']) - 1;
                     $lastEl = $value['data'][$lastId];
 
+                    //Чистим от кирилицы и скобок в codeName
                     $key = preg_replace('/( \(\w+\))/u', '', $key);
 
                     if(!is_null($lastEl[1]))
@@ -131,6 +133,7 @@ class MosecomParser
                     $lastId = count($value['data']) - 1;
                     $lastEl = $value['data'][$lastId];
 
+                    //Чистим от кирилицы и скобок в codeName
                     $key = preg_replace('/( \(\w+\))/u', '', $key);
 
                     if(!is_null($lastEl[1]))
@@ -165,12 +168,12 @@ class MosecomParser
         return $response;
     }
 
-    private function getHtmlByStationName($name, $isClose = true, $isUseNewUA = false)
+    private function getHtmlByStationName($name, $isClose = true, $isUseNewUA = false): string
     {
         return $this->curl->get($this->domain . $name . "/", [], $isUseNewUA, $isClose);
     }
 
-    private function getJsonByHtml($html)
+    private function getJsonByHtml($html): string
     {
         $response = "";
 
@@ -188,7 +191,7 @@ class MosecomParser
         return $response;
     }
 
-    private function getAddressByHtml($html)
+    private function getAddressByHtml($html): string
     {
         $response = "";
 
@@ -206,7 +209,7 @@ class MosecomParser
         return $response;
     }
 
-    private function getNameByHtml($html)
+    private function getNameByHtml($html): string
     {
         $response = "";
 
@@ -224,7 +227,7 @@ class MosecomParser
         return $response;
     }
 
-    private function tryParseErrorByHtml($html)
+    private function tryParseErrorByHtml($html): array
     {
         $response = [
             "hasError" => false,

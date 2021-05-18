@@ -16,14 +16,14 @@ class MosecomAdapter implements GrabAdapterInterface
         return self::NAME;
     }
 
-    private function parse()
+    private function parse(): void
     {
         $parser = $this->getParser();
         $service = $this->getService();
 
         $indicationsList = $parser->getTypeOfIndications(true);
         $service->saveTypeOfIndications($indicationsList);
-        
+
         $stations = $parser->getStations();
         foreach (array_chunk($stations, 20) as $chunk) {
             MosecomParseStationAndRecordsSaveJob::dispatch($chunk)->onQueue($this->getAdapterName());
