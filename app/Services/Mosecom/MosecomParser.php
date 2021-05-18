@@ -193,7 +193,7 @@ class MosecomParser
         $response = "";
 
         $isFind = preg_match(
-            "/<span class=\"adress\">[\r\n]*([\w ,]+)<\/span>/mu",
+            "/<span class=\"adress\">[\r\n]*([\w ,-\.()\/]+)<\/span>/mu",
             $html,
             $matches
         );
@@ -211,7 +211,7 @@ class MosecomParser
         $response = "";
 
         $isFind = preg_match(
-            "/h3 class=\"name\">[\r\n]*([\w ,]+)<\/h3>/mu",
+            "/h3 class=\"name\">[\r\n]*([\w ,-\.()\/]+)<\/h3>/mu",
             $html,
             $matches
         );
