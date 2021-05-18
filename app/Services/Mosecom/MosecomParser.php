@@ -14,6 +14,9 @@ class MosecomParser
         "ru" => "stations/",
         "en" => "measuring-stations/" //TODO: WTF?
     ];
+    private $mosecomApi = [
+        "typeOfIndications" => "wp-content/themes/moseco/map/elements.php?locale=ru_RU&mapType=air"
+    ];
 
     public function getUrlStationByName($name)
     {
@@ -25,7 +28,28 @@ class MosecomParser
         $this->curl = new MosecomRepository();
     }
 
-    public function getStations($isClose = true, $isUseNewUA = false)
+    public function getTypeOfIndications($isClose = true, $isUseNewUA = false): array
+    {
+        $response = [];
+
+        $json = $this->curl->get($this->domain . $this->mosecomApi['typeOfIndications'], [] , $isUseNewUA, $isClose);
+
+        $typeOfIndicationsList = json_decode($json,true)[0];
+
+        foreach ($typeOfIndicationsList as $typeOfIndication) {
+            $codeName = $typeOfIndication['name'];
+            $name = $typeOfIndication['full_name'];
+
+            array_push($response, [
+                "codeName" => preg_replace('/( \(\w+\))/u', '', $codeName),
+                "name" => trim($name),
+            ]);
+        }
+
+        return $response;
+    }
+
+    public function getStations($isClose = true, $isUseNewUA = false): array
     {
         $response = [];
 
@@ -41,13 +65,14 @@ class MosecomParser
             $matches
         );
 
-        if($isFind)
+        if($isFind) {
             $response = $matches[1];
+        }
 
         return $response;
     }
 
-    public function getStationInfoByName($name, $isClose = true, $isUseNewUA = false)
+    public function getStationInfoByName($name, $isClose = true, $isUseNewUA = false): array
     {
         $response = [];
 
@@ -94,12 +119,11 @@ class MosecomParser
                     $lastId = count($value['data']) - 1;
                     $lastEl = $value['data'][$lastId];
 
+                    //Чистим от кирилицы и скобок в codeName
+                    $key = preg_replace('/( \(\w+\))/u', '', $key);
+
                     if(!is_null($lastEl[1]))
                     {
-                        if(!isset($response['code_nameCyrillic'][$key])) {
-                            $response['code_nameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndcode_name($key, $html);
-                        }
-
                         $response['measurement'][$key]['proportion']['time'] =  round($lastEl[0] / 1000);
                         $response['measurement'][$key]['proportion']['value'] =  round($lastEl[1],3);
                     }
@@ -109,12 +133,11 @@ class MosecomParser
                     $lastId = count($value['data']) - 1;
                     $lastEl = $value['data'][$lastId];
 
+                    //Чистим от кирилицы и скобок в codeName
+                    $key = preg_replace('/( \(\w+\))/u', '', $key);
+
                     if(!is_null($lastEl[1]))
                     {
-                        if(!isset($response['code_nameCyrillic'][$key])) {
-                            $response['code_nameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndcode_name($key, $html);
-                        }
-
                         $response['measurement'][$key]['unit']['time'] = round($lastEl[0] / 1000);
                         $response['measurement'][$key]['unit']['value'] = round($lastEl[1], 3);
                     }
@@ -145,32 +168,12 @@ class MosecomParser
         return $response;
     }
 
-    private function parseError($str)
-    {
-        $exp = explode(",",$str);
-
-        array_walk($exp, function(&$item, $key) {
-            if($key == 0)
-            {
-                $expTmp = explode(" ",$item);
-                $item = $expTmp[count($expTmp) - 1];
-            }
-
-            $item = trim($item);
-
-            $item = str_replace([",","."],"",$item);
-
-        });
-
-        return $exp;
-    }
-
-    private function getHtmlByStationName($name, $isClose = true, $isUseNewUA = false)
+    private function getHtmlByStationName($name, $isClose = true, $isUseNewUA = false): string
     {
         return $this->curl->get($this->domain . $name . "/", [], $isUseNewUA, $isClose);
     }
 
-    private function getJsonByHtml($html)
+    private function getJsonByHtml($html): string
     {
         $response = "";
 
@@ -188,12 +191,12 @@ class MosecomParser
         return $response;
     }
 
-    private function getAddressByHtml($html)
+    private function getAddressByHtml($html): string
     {
         $response = "";
 
         $isFind = preg_match(
-            "/<span class=\"adress\">[\r\n]*([\w ,]+)<\/span>/mu",
+            "/<span class=\"adress\">[\r\n]*([\w ,-\.()\/]+)<\/span>/mu",
             $html,
             $matches
         );
@@ -206,12 +209,12 @@ class MosecomParser
         return $response;
     }
 
-    private function getNameByHtml($html)
+    private function getNameByHtml($html): string
     {
         $response = "";
 
         $isFind = preg_match(
-            "/h3 class=\"name\">[\r\n]*([\w ,]+)<\/h3>/mu",
+            "/h3 class=\"name\">[\r\n]*([\w ,-\.()\/]+)<\/h3>/mu",
             $html,
             $matches
         );
@@ -224,7 +227,7 @@ class MosecomParser
         return $response;
     }
 
-    private function tryParseErrorByHtml($html)
+    private function tryParseErrorByHtml($html): array
     {
         $response = [
             "hasError" => false,
@@ -259,51 +262,4 @@ class MosecomParser
 
         return $response;
     }
-
-    private function getCodeCyrillicNameByHtmAndcode_name($code_name, $html)
-    {
-        $response = null;
-
-        $code_name = $this->code_nameNormolize($code_name);
-
-        $hasCodeCyrillicName = preg_match(
-            '/<\/strong>:[ \w,\(\)]*,([\w ]*)\('.$code_name.'\)[,|<sub>]/mu',
-            $html,
-            $matches
-        );
-
-        if($hasCodeCyrillicName)
-        {
-            $response = $this->mb_ucfirst(trim($matches[1]));
-        }
-
-        return $response;
-    }
-
-    private function mb_ucfirst($text) {
-        return mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
-    }
-
-    private function code_nameNormolize($code_name)
-    {
-        $response = $code_name;
-
-        $exp = explode(" ",$code_name);
-
-        if(count($exp) > 1)
-            $response = $exp[0];
-
-        if($response == "OZ") {
-            $response = "О3";
-        }
-
-        if($response == "C6H5OH") {
-            $response = "С6H5OH";
-        }
-
-        $response = str_replace(".",",",$response);
-
-        return $response;
-    }
-
 }
