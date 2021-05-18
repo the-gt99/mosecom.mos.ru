@@ -96,10 +96,6 @@ class MosecomParser
 
                     if(!is_null($lastEl[1]))
                     {
-                        if(!isset($response['code_nameCyrillic'][$key])) {
-                            $response['code_nameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndcode_name($key, $html);
-                        }
-
                         $response['measurement'][$key]['proportion']['time'] =  round($lastEl[0] / 1000);
                         $response['measurement'][$key]['proportion']['value'] =  round($lastEl[1],3);
                     }
@@ -111,10 +107,6 @@ class MosecomParser
 
                     if(!is_null($lastEl[1]))
                     {
-                        if(!isset($response['code_nameCyrillic'][$key])) {
-                            $response['code_nameCyrillic'][$key] = $this->getCodeCyrillicNameByHtmAndcode_name($key, $html);
-                        }
-
                         $response['measurement'][$key]['unit']['time'] = round($lastEl[0] / 1000);
                         $response['measurement'][$key]['unit']['value'] = round($lastEl[1], 3);
                     }
@@ -143,26 +135,6 @@ class MosecomParser
         }
 
         return $response;
-    }
-
-    private function parseError($str)
-    {
-        $exp = explode(",",$str);
-
-        array_walk($exp, function(&$item, $key) {
-            if($key == 0)
-            {
-                $expTmp = explode(" ",$item);
-                $item = $expTmp[count($expTmp) - 1];
-            }
-
-            $item = trim($item);
-
-            $item = str_replace([",","."],"",$item);
-
-        });
-
-        return $exp;
     }
 
     private function getHtmlByStationName($name, $isClose = true, $isUseNewUA = false)
@@ -259,51 +231,4 @@ class MosecomParser
 
         return $response;
     }
-
-    private function getCodeCyrillicNameByHtmAndcode_name($code_name, $html)
-    {
-        $response = null;
-
-        $code_name = $this->code_nameNormolize($code_name);
-
-        $hasCodeCyrillicName = preg_match(
-            '/<\/strong>:[ \w,\(\)]*,([\w ]*)\('.$code_name.'\)[,|<sub>]/mu',
-            $html,
-            $matches
-        );
-
-        if($hasCodeCyrillicName)
-        {
-            $response = $this->mb_ucfirst(trim($matches[1]));
-        }
-
-        return $response;
-    }
-
-    private function mb_ucfirst($text) {
-        return mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
-    }
-
-    private function code_nameNormolize($code_name)
-    {
-        $response = $code_name;
-
-        $exp = explode(" ",$code_name);
-
-        if(count($exp) > 1)
-            $response = $exp[0];
-
-        if($response == "OZ") {
-            $response = "О3";
-        }
-
-        if($response == "C6H5OH") {
-            $response = "С6H5OH";
-        }
-
-        $response = str_replace(".",",",$response);
-
-        return $response;
-    }
-
 }

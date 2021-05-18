@@ -98,7 +98,7 @@ class MosecomService
         return $tmp;
     }
 
-    public function save($stations, $lang = "ru")
+    public function trySaveStationsInf($stations, $lang = "ru")
     {
 
         foreach ($stations as $stationName => $stationInf)
@@ -122,15 +122,10 @@ class MosecomService
             {
                 foreach ($stationInf['errorInf']['notFoundMeasurementNames'] as $indicationName)
                 {
-                    if(isset($stationInf['code_nameCyrillic'][$indicationName]))
-                        $code_nameCyrillic = $stationInf['code_nameCyrillic'][$indicationName];
-                    else
-                        $code_nameCyrillic = $indicationName;
-
-                    //Создаем тип измерения если еще не создан
+                    //Создаем тип измерения если еще не создан, что старнно
                     $typeOfIndication = TypeOfIndication::firstOrCreate(
                         ['code_name' => $indicationName],
-                        ['name' => $code_nameCyrillic]
+                        ['name' => null]
                     );
 
                     $error = Errors::firstOrCreate([
@@ -155,18 +150,14 @@ class MosecomService
             {
                 foreach ($stationInf['measurement'] as $indicationName => $indicationInf)
                 {
-                    if(isset($stationInf['code_nameCyrillic'][$indicationName]))
-                        $code_nameCyrillic = $stationInf['code_nameCyrillic'][$indicationName];
-                    else
-                        $code_nameCyrillic = $indicationName;
-
                     //Создаем тип измерения если еще не создан
                     $typeOfIndication = TypeOfIndication::firstOrCreate(
                         ['code_name' => $indicationName],
-                        ['name' => $code_nameCyrillic]
+                        ['name' => null]
                     );
 
                     $unixTimestamp = (int)$indicationInf['proportion']['time'] - 3*60*60;
+
                     Records::firstOrCreate(
                         [
                             'station_id' => $station->id,
@@ -178,8 +169,8 @@ class MosecomService
                     );
                 }
             }
-
-
         }
+
+        return true;
     }
 }
