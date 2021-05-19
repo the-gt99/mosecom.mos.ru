@@ -40,7 +40,6 @@ class AirCmsDevicesSaveJob implements ShouldQueue
             $station = Stations::query()->where('type_primaty_key', $device['id'])->where('type', AirCmsAdapter::NAME)->first();
             if (!$station) {
                 $stationsData = new Stations([
-                    'name' => 1,
                     'address' => $device['address'],
                     'type_primaty_key' => $device['id'],
                     'type' => AirCmsAdapter::NAME

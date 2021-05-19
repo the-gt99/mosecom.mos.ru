@@ -15,8 +15,8 @@ class CreateStationsTable extends Migration
     {
         Schema::create('stations', function (Blueprint $table) {
             $table->id();
-            $table->string("name");
-            $table->string("address");
+            $table->string("name")->nullable();
+            $table->string("address")->nullable();
             $table->point('point')->spatialIndex();
             $table->string("type_primaty_key")->unique();
             $table->string("type")->nullable();

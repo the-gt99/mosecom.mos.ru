@@ -14,8 +14,6 @@ class StationResource extends JsonResource
      */
     public function toArray($request)
     {
-        $this->load('records');
-
         return [
             'id' => $this->id,
             'name' => $this->name,

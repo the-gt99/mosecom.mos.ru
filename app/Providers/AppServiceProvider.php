@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Repositories\AirCms\AirCmsRepository;
 use App\Services\AirCms\AirCmsAdapter;
+use App\Services\AirCms\AirCmsService;
 use App\Services\Grabber;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(Grabber::class, function ($app) {
             return new Grabber();
+        });
+        $this->app->bind(AirCmsService::class, function ($app) {
+            return new AirCmsService(new AirCmsRepository);
         });
     }
 
