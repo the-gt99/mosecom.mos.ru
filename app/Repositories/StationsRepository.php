@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\Records;
 use App\Models\Stations;
 use DateTime;
 use Grimzy\LaravelMysqlSpatial\Types\Point;
@@ -35,10 +36,18 @@ class StationsRepository
 
     public function getValidStations($lat = 55.75, $lon = 37.6167, $min_condition, $max_condition): Collection
     {
+        $subQueryForRecordsMeasurementMax = Records::query()
+            ->selectRaw('station_id, max(measurement_at) as date')
+            ->groupBy('station_id');
+
         $query = Stations::query()
             ->distanceSphere('point', new Point($lat, $lon), 10000)
-            ->with(['records' => function ($query) {
-                return $query->where('measurement_at', '>=' , date('Y-m-d H:i:s', strtotime('now -1 hour')));
+            ->with(['records' => function ($query) use ($subQueryForRecordsMeasurementMax) {
+                return $query
+                    ->withExpression('max_station', $subQueryForRecordsMeasurementMax)
+                    ->where('measurement_at', '>=' , date('Y-m-d H:i:s', strtotime('now -1 hour')))
+                    ->join('max_station', 'max_station.station_id' ,'=', 'records.station_id')
+                    ;
             }])
             ->whereHas('records' , function ($query) {
                 return $query->where('measurement_at', '>=' , date('Y-m-d H:i:s', strtotime('now -1 hour')));
