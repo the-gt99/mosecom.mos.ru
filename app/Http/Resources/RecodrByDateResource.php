@@ -14,11 +14,11 @@ class RecodrByDateResource extends JsonResource
      */
     public function toArray($request)
     {
-//        $this->load('stations');
+        $station = $this->first();
         return [
-            'type' => 'MosEkoMonitoring',
-            'name' => 'МосЭкоМониторинг',
-//            'stations' => StationResource::collection($this->whenLoaded('stations'))
+            'type' => ($this->first() ? $this->first()->type == "mosecom" : null)? 'MosEkoMonitoring' : "undefined",
+            'name' => ($this->first() ? $this->first()->type == "mosecom": null)? 'МосЭкоМониторинг' : "не МосЭкоМониторинг",
+            'stations' => StationResource::collection($this)
         ];
     }
 }

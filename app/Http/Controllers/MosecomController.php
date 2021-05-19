@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\RecodrByDateResource;
 use App\Http\Resources\StationResource;
 use App\Models\Stations;
 use App\Services\Mosecom\MosecomService;
+use Illuminate\Database\Eloquent\Collection;
 
 class MosecomController extends Controller
 {
@@ -34,6 +36,10 @@ class MosecomController extends Controller
 
     public function getRecordByDate(string $date)
     {
-        return StationResource::collection(Stations::all());
+        $stationsA = Stations::query()->where('type','mosecom')->get();
+        $stationsB = Stations::query()->where('type','aircms')->get();
+
+
+        return RecodrByDateResource::collection([$stationsA, $stationsB]);
     }
 }
