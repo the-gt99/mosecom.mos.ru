@@ -26,8 +26,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(function () {
-            GrabberJob::dispatch('App\Services\AirCms\AirCmsAdapter');
-            GrabberJob::dispatch('App\Services\Mosecom\MosecomAdapter');
+            GrabberJob::dispatchNow('App\Services\AirCms\AirCmsAdapter');
+            GrabberJob::dispatchNow('App\Services\Mosecom\MosecomAdapter');
         })->cron('10 * * * *');
     }
 
