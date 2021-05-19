@@ -20,7 +20,7 @@ class RecodrResource extends JsonResource
             'particle_name' => $this->indication->code_name,
             'proportion' => $this->proportion,
             'unit' => $this->unit,
-            'measurement_at' => $this->measurement_at
+            'measurement_at' => strtotime($this->measurement_at) //todo учитывать часовой пояс
         ];
     }
 }
