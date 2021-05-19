@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\StationResource;
+use App\Http\Resources\RecodrByDateResource;
 use App\Repositories\StationsRepository;
 use App\Services\AirCms\AirCmsService;
 use App\Services\GeographyHelper;
@@ -21,8 +21,9 @@ class AirConroller extends Controller
         list($minCondition, $maxCondition) = GeographyHelper::getAngleConditions($windDirection);
         /** @var StationsRepository */
         $stationsRep = app(StationsRepository::class);
-        $stations = $stationsRep->getValidStations($lat, $lon, $minCondition, $maxCondition);
+        $stationsAir = $stationsRep->getValidStations($lat, $lon, $minCondition, $maxCondition, 'aircms');
+        $stationMosecom = $stationsRep->getValidStations($lat, $lon, $minCondition, $maxCondition, 'mosecom');
 
-        return StationResource::collection($stations);
+        return RecodrByDateResource::collection([$stationsAir, $stationMosecom]);
     }
 }
