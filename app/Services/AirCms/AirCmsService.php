@@ -22,7 +22,7 @@ class AirCmsService
 
     public function getWindDirectuion($lat, $lon)
     {
-        $stations = $this->aircmsRepository->getRecordsByCoords($lat - 0.06, $lon - 0.06, $lat + 0.06, $lon + 0.06);
+        $stations = $this->aircmsRepository->getRecordsByCoords($lat - 0.05, $lon - 0.05, $lat + 0.05, $lon + 0.05);
         $vars = array_count_values(array_column($stations, 'wd'));
 
         $max = -1;

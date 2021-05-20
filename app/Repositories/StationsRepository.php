@@ -38,8 +38,11 @@ class StationsRepository
         $query = Stations::query()
             ->distanceSphere('point', new Point($lat, $lon), 10000)
             ->whereHas('records' , function ($query) {
-                return $query
-                    ->where('measurement_at', '>=' , date('Y-m-d H:i:s', strtotime('now -1 hour')))
+                return $query->where(function (Builder $query) {
+                    return $query
+                        ->where('measurement_at', '>=' , date('Y-m-d H:i:s', strtotime('now -1 hour')))
+                        ->orWhere('created_at', '>=' , date('Y-m-d H:i:s', strtotime('now -1 hour')));
+                    })
                     ->whereNull('error_id');
             });
         if ($type) {
@@ -53,6 +56,7 @@ class StationsRepository
         } else {
             $query->where(\DB::raw("IF(ST_X(`point`) <= $lon,  degrees(ATAN(ST_X(`point`) - $lon, ST_Y(`point`) - $lat)) + 360,  degrees(ATAN(ST_X(`point`) - $lon, ST_Y(`point`) - $lat)))"), '=', $min_condition);
         }
+        $query->orderBy(\DB::raw("(POW((ST_X(`point`)-$lon),2) + POW((ST_Y(`point`)-$lat),2))"))->limit(1);
 
         $statuionsIds = $query->get()->pluck('id')->toArray();
 

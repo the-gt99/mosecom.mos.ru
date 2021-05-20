@@ -39,6 +39,7 @@ class AirCmsRecordsSaveJob implements ShouldQueue
         $recordsToInsert = [];
         $sds_p1 = TypeOfIndication::query()->where('code_name', 'sds_p1')->first();
         $sds_p2 = TypeOfIndication::query()->where('code_name', 'sds_p2')->first();
+        $date = date("Y-m-d H:i:s", time());
         foreach ($this->records as $record) {
             if ($record['ts'] < 3600) {
 
@@ -54,7 +55,8 @@ class AirCmsRecordsSaveJob implements ShouldQueue
                             'unit' => $record['sds_p1'],
                             'measurement_at' => date('Y-m-d H:m:s', time() - $record['ts']),
                             'station_id' => $station->getKey(),
-                            'indication_id' => $sds_p1->getKey()
+                            'indication_id' => $sds_p1->getKey(),
+                            'created_at' => $date
                         ];
                     }
 
@@ -63,7 +65,8 @@ class AirCmsRecordsSaveJob implements ShouldQueue
                             'unit' => $record['sds_p2'],
                             'measurement_at' => date('Y-m-d H:m:s', time() - $record['ts']),
                             'station_id' => $station->getKey(),
-                            'indication_id' => $sds_p2->getKey()
+                            'indication_id' => $sds_p2->getKey(),
+                            'created_at' => $date
                         ];
                     }
                 }
