@@ -19,11 +19,16 @@ class AirConroller extends Controller
         $airCmsSercvice = app(AirCmsService::class);
         $windDirection = $airCmsSercvice->getWindDirectuion($lat, $lon);
         list($minCondition, $maxCondition) = GeographyHelper::getAngleConditions($windDirection);
+
         /** @var StationsRepository */
         $stationsRep = app(StationsRepository::class);
         $stationsAir = $stationsRep->getValidStations($lat, $lon, $minCondition, $maxCondition, 'aircms');
         $stationMosecom = $stationsRep->getValidStations($lat, $lon, $minCondition, $maxCondition, 'mosecom');
 
-        return RecodrByDateResource::collection([$stationsAir, $stationMosecom]);
+        $arr = [];
+        !$stationsAir->isEmpty() ? $arr[] = $stationsAir : '';
+        !$stationMosecom->isEmpty() ? $arr[] = $stationsAir : '';
+
+        return RecodrByDateResource::collection($arr);
     }
 }

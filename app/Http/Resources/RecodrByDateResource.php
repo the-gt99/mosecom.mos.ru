@@ -15,7 +15,7 @@ class RecodrByDateResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'type' => $this->first() && $this->first()->type == "mosecom" ? 'MosEkoMonitoring' : "AirCms",
+            'type' => $this->first()->type,
             'name' => $this->first() && $this->first()->type == "mosecom" ? 'МосЭкоМониторинг' : "AIRCMS",
             'stations' => StationResource::collection($this)
         ];
