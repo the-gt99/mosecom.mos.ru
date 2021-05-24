@@ -24,7 +24,7 @@ class AirCmsAdapter implements GrabAdapterInterface
         /** @var AirCmsRepository */
         $repository = $this->getRepository();
         $devices = $repository->getDevices();
-        foreach (array_chunk($devices['data'], 100) as $chunk) {
+        foreach (array_chunk($devices['data'], 300) as $chunk) {
             AirCmsDevicesSaveJob::dispatch($chunk)->onQueue($this->getAdapterName());
         }
 
